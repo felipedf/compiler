@@ -1,0 +1,9 @@
+grammar org.xtext.project.stdc.Stdc with org.eclipse.xtext.common.Terminals
+
+generate stdc "http://www.xtext.org/project/stdc/Stdc"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' name=ID '!';
