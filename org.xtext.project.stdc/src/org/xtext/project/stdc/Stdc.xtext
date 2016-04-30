@@ -3,7 +3,313 @@ grammar org.xtext.project.stdc.Stdc with org.eclipse.xtext.common.Terminals
 generate stdc "http://www.xtext.org/project/stdc/Stdc"
 
 Model:
-	greetings+=Greeting*;
+	greetings+=expression;
+
+postfix_expression
+	: "postfix"//primary_expression
+//	| postfix_expression '[' expression ']'
+//	| postfix_expression '(' ')'
+//	| postfix_expression '(' argument_expression_list ')'
+//	| postfix_expression '.' IDENTIFIER
+//	| postfix_expression PTR_OP IDENTIFIER
+//	| postfix_expression INC_OP
+//	| postfix_expression DEC_OP
+//	| '(' type_name ')' '{' initializer_list '}'
+//	| '(' type_name ')' '{' initializer_list ',' '}'
+	;
+
+argument_expression_list
+	: assignment_expression (=>({ArgumentExp.left=current} ',') right=assignment_expression)*
+	;
+
+unary_expression returns expression
+	: postfix_expression
+	| '++' unExp=unary_expression
+	| '--' unExp=unary_expression
+	| OpUnary castExp=cast_expression
+	| 'sizeof' unExp=unary_expression
+	| 'sizeof' '(' type=type_name ')'
+	| '_Alignof' '(' type=type_name ')'
+	;
+
+OpInc:
+	"++" | "--"
+;
+
+OpUnary:
+	'&' | '*' | '+' | '-' | '~' | '!'
+;
+
+cast_expression returns expression
+	: ('(' type_name ')')* unary_expression
+	;
+
+multiplicative_expression returns expression
+	: cast_expression (=>({MultExp.left=current} OpMult) right=cast_expression)*
+	//| cast_expression ({MultExp.left=current} '/' right=cast_expression)*
+	//| cast_expression ({MultExp.left=current} '%' right=cast_expression)*
+	;
+
+OpMult:
+	'*' | '/' | '%'
+;
+
+additive_expression returns expression
+	: multiplicative_expression (=>({AddExp.left=current} OpAdd) right=multiplicative_expression)*
+	//| multiplicative_expression ({AddExp.left=current} '-' right=multiplicative_expression)*
+	;
 	
-Greeting:
-	'Hello' name=ID '!';
+OpAdd:
+	'+' | '-'
+;
+
+shift_expression returns expression
+	: additive_expression (=>({ShiftExp.left=current} OpShift) right=additive_expression)*
+	//| shift_expression RIGHT_OP additive_expression
+	;
+	
+OpShift:
+	'<<' | '>>'
+;
+
+relational_expression returns expression
+	: shift_expression (=>({RelExp.left=current} OpRel) right=shift_expression)*
+	//| shift_expression ({RelExp.left=current} '>' right=shift_expression)*
+	//| shift_expression ({RelExp.left=current} OpRel right=shift_expression)*
+	//| relational_expression GE_OP shift_expression
+	;
+
+OpRel:
+	'<=' | '>=' | '<' | '>'
+;
+
+equality_expression returns expression
+	: relational_expression (=>({EqualExp.left=current} OpEqual) right=relational_expression)*
+	//| equality_expression NE_OP relational_expression
+	;
+
+OpEqual:
+	'==' | '!=' 
+;
+
+and_expression returns expression
+	: equality_expression (=>({AndExp.left=current} '&') right=equality_expression)*
+	;
+
+exclusive_or_expression returns expression
+	: and_expression (=>({ExclusiveOr.left=current} '^') right=and_expression)*
+	;
+
+inclusive_or_expression returns expression
+	: exclusive_or_expression (=>({InclusiveOr.left=current} '|') right=exclusive_or_expression)*
+	;
+
+logical_and_expression returns expression
+	: inclusive_or_expression (=>({LogicalExp.left=current} OpAnd) right=inclusive_or_expression)*
+	;
+
+OpAnd:
+	'&&'
+;
+
+logical_or_expression returns expression
+	: logical_and_expression (=>({LogicOr.left=current} OpOr) right=logical_and_expression)*
+	;
+
+OpOr:
+	'||'
+;
+
+conditional_expression returns expression
+	: {TernaryExp} first=logical_or_expression
+	  	(=>('?' second=expression) =>(':' third=conditional_expression))?
+	;
+
+assignment_expression returns expression
+	: {AssignExp} (left+=unary_expression OpAssign)* =>right=conditional_expression
+	;
+
+OpAssign:
+	  '='  | '+=' | '-=' | '*=' | '/=' | '%='
+	| '&=' | '|=' | '<' '<' '=' | '>' '>=';
+
+expression returns expression
+	: assignment_expression (=>({Exp.left=current} ',') right=assignment_expression)*
+	;
+
+constant_expression
+	: conditional_expression	/* with constraints */
+	;
+
+enumerator_list
+	: enumerator ({EnumList.left=current} ',' right=enumerator)*
+	;
+
+enumerator	/* identifiers must be flagged as ENUMERATION_CONSTANT */
+	: /*enumeration_constant*/{EnumAtt} _ID=ID '=' exp=constant_expression
+	| /*enumeration_constant*/{Enum} ID
+	;
+
+atomic_type_specifier
+	: '_Atomic' '(' type_name ')'
+	;
+
+type_qualifier
+	: 'const'
+	| 'restrict'
+	| 'volatile'
+	| '_Atomic'
+	;
+
+function_specifier
+	: "inline"
+	| '_Noreturn'
+	;
+
+alignment_specifier
+	: {Alignment} Alignas '(' (type=type_name|exp=constant_expression) ')'
+	;
+
+Alignas:
+	'_Alignas'
+;
+
+///////////////////////////////////
+
+type_name
+	: "type"//specifier_qualifier_list abstract_declarator
+	//| specifier_qualifier_list
+	;
+/////////////
+
+
+//TODO
+initializer returns initializer
+	: {init_list} '{' Init=initializer_list Comma=','? '}'
+	//| '{' initializer_list ',' '}'
+	| assignment_expression
+	;
+
+initializer_list
+	:// {desig_init} Desig=designation? Init=initializer
+	//| {init} Init=initializer
+	 initializer_list_terminal ({InitLis.left=current} ',' right=initializer_list_terminal)*
+	//| {init_list_init}  Init_list=initializer_list ',' Init=initializer
+	;
+	
+initializer_list_terminal returns initializer_list
+	:
+		Desig=designation? Init=initializer
+	;
+
+designation
+	: designator_list "="
+	;
+
+designator_list
+	:  DesignatorList += designator
+	;
+
+//TODO
+designator
+	: '[' /*constant_expression*/ ']'
+	| '.' _ID=ID
+	;
+
+//TODO
+static_assert_declaration
+	: "_Static_assert" '(' /* constant_expression */ ',' literal=STRING ')' ';'
+	;
+
+statement returns statement
+	: labeled_statement
+	| compound_statement
+	| expression_statement
+	| selection_statement
+	| iteration_statement
+	| jump_statement
+	;
+
+//TODO
+labeled_statement returns statement
+	: /*IDENTIFIER*/ ':' right=statement
+	| "case" exp=constant_expression ':' right=statement
+	| "default" ':' right=statement
+	;
+
+compound_statement
+	: '{' '}'
+	| '{'  block_item_list '}'
+	;
+	
+block_item_list
+	:  BlockItemt+=block_item+
+	;
+	
+//TODO
+block_item
+	: "test"/*declaration*/
+	| statement
+	;
+
+//TODO
+expression_statement
+	: ';'
+//	| expression ';'
+	;
+
+//TODO
+selection_statement returns statement
+	: if_statement
+	| switch_statement
+	;
+
+//TODO
+iteration_statement returns statement
+	: while_loop
+	| do_loop
+	| for_loop
+//	| {for2_stmt} "for" '(' expression_statement expression_statement /*expression*/ ')' stmt=statement
+//	| {for3_stmt} "for" '(' /*declaration expression_statement (expression)?*/')' stmt=statement
+//	| {for4_stmt} "for" '(' /*declaration*/ expression_statement /*expression*/ ')' stmt=statement
+	;
+
+if_statement returns statement:
+		{IfStatement}
+		'if' '(' cond=expression ')'
+		then=statement
+		(=>"else" else=statement)?	
+	;
+
+switch_statement returns statement:
+	{SwitchStatement}
+	'switch' '(' switchExp=expression ')'
+	stmt=statement
+;
+
+for_loop returns statement:
+	{ForLoop}
+	'for' '(' (expression_statement|"test" /*declaration*/)	expression_statement (expression)? ')'
+	body=statement
+;
+
+while_loop returns statement:
+	{WhileLoop}
+	'while' '(' cond=expression ')'
+	body=statement
+;
+
+do_loop returns statement:
+	{DoLoop}
+	'do' body=statement
+	'while' '(' cond=expression ')' ';'
+;
+
+//TODO
+jump_statement
+	: 'goto' /*IDENTIFIER*/ ';'
+	| 'continue' ';'
+	| 'break' ';'
+	| 'return' ';'
+	| 'return' expression ';'
+	;
