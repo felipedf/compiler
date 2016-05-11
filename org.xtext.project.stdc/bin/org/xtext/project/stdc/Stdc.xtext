@@ -3,39 +3,39 @@ grammar org.xtext.project.stdc.Stdc with org.eclipse.xtext.common.Terminals hidd
 generate stdc "http://www.xtext.org/project/stdc/Stdc"
 
 Model:
-	greetings=translation_unit;
+	greetings=TranslationUnit;
 
-translation_unit
-	: {TransUnit} exDeclaration+=external_declaration*
+TranslationUnit
+	: exDeclaration+=ExternalDeclaration*
 	;
 
 //declaração de variaveis e funcoes e afins
-external_declaration
+ExternalDeclaration
 	: 
-	(=> function_definition
-	| declaration )
+	(=>FunctionDefinition
+	| Declaration )
 	;
 
-function_definition
-	: declarationSpec+=declaration_specifier+ decla=declarator
-		 declaList+=declaration* =>stmt=compound_statement
+FunctionDefinition
+	: declarationSpec+=DeclarationSpecifier+ decla=Declarator
+		 declaList+=Declaration* body=CompoundStatement
 	;
 
-declaration_list
-	: decl+=declaration+
+DeclarationList
+	: decl+=Declaration+
 	;
 
-constant_expression
-	: conditional_expression	/* with constraints */
+ConstantExpression
+	: ConditionalExpression	/* with constraints */
 	;
 	
-expression returns expression
-	: assignment_expression (=>({Exp.left=current} ',') right=assignment_expression)*
+ExpressionC returns ExpressionC
+	: AssignmentExpression (=>({Exp.left=current} ',') right=AssignmentExpression)*
 	;
 	
-assignment_expression returns expression
+AssignmentExpression returns ExpressionC
 	: //{AssignExp} (=>left+=unary_expression OpAssign)* =>right+=conditional_expression
-		left=conditional_expression  (OpAssign right=conditional_expression)?
+		ConditionalExpression  ({AssignmentExpression.left=current} OpAssign right=ConditionalExpression)?
 	;
 
 OpAssign:
@@ -43,74 +43,74 @@ OpAssign:
 	| '&=' | '|=' | '<' '<' '=' | '>' '>=';
 
 
-conditional_expression returns expression
-	: {TernaryExp} first+=logical_or_expression
-	  	(=>('?' second=expression) ':' third=conditional_expression)?
+ConditionalExpression returns ExpressionC
+	:  LogicalOrExpression
+	  	({ConditionalExpression.first=current} =>('?' second=ExpressionC) ':' third=ConditionalExpression)?
 	;
 
-logical_or_expression returns expression
-	: logical_and_expression (=>({LogicOr.left=current} OpOr) right=logical_and_expression)*
+LogicalOrExpression returns ExpressionC
+	: LogicalAndExpression (=>({LogicOr.left=current} OpOr) right=LogicalAndExpression)*
 	;
 
 OpOr:
 	'||'
 ;
 
-logical_and_expression returns expression
-	: inclusive_or_expression (=>({LogicalExp.left=current} OpAnd) right=inclusive_or_expression)*
+LogicalAndExpression returns ExpressionC
+	: InclusiveOrExpression (=>({LogicalExp.left=current} OpAnd) right=InclusiveOrExpression)*
 	;
 
 OpAnd:
 	'&&'
 ;
 
-inclusive_or_expression returns expression
-	: exclusive_or_expression (=>({InclusiveOr.left=current} '|') right=exclusive_or_expression)*
+InclusiveOrExpression returns ExpressionC
+	: ExclusiveOrExpression (=>({InclusiveOr.left=current} '|') right=ExclusiveOrExpression)*
 	;
 
-exclusive_or_expression returns expression
-	: and_expression (=>({ExclusiveOr.left=current} '^') right=and_expression)*
+ExclusiveOrExpression returns ExpressionC
+	: AndExpression (=>({ExclusiveOr.left=current} '^') right=AndExpression)*
 	;
 
-and_expression returns expression
-	: equality_expression (=>({AndExp.left=current} '&') right=equality_expression)*
+AndExpression returns ExpressionC
+	: EqualityExpression (=>({AndExp.left=current} '&') right=EqualityExpression)*
 	;
 
-equality_expression returns expression
-	: relational_expression (=>({EqualExp.left=current} OpEqual) right=relational_expression)*
+EqualityExpression returns ExpressionC
+	: RelationalExpression (=>({EqualExp.left=current} OpEqual) right=RelationalExpression)*
 	;
 
 OpEqual:
 	'==' | '!=' 
 ;
 
-relational_expression returns expression
-	: shift_expression (=>({RelExp.left=current} OpRel) right=shift_expression)*
+RelationalExpression returns ExpressionC
+	: ShiftExpression (=>({RelExp.left=current} OpRel) right=ShiftExpression)*
 	;
 
 OpRel:
 	'<=' | '>=' | '<' | '>'
 ;
 
-shift_expression returns expression
-	: additive_expression (=>({ShiftExp.left=current} OpShift) right=additive_expression)*
+ShiftExpression returns ExpressionC
+	: AdditiveExpression (=>({ShiftExp.left=current} OpShift) right=AdditiveExpression)*
 	;
 	
 OpShift:
 	'<<' | '>>'
 ;
 
-additive_expression returns expression
-	: multiplicative_expression (=>({AddExp.left=current} OpAdd) right=multiplicative_expression)*
+AdditiveExpression returns ExpressionC
+	: MultiplicativeExpression (=>({AddExp.left=current} OpAdd) right=MultiplicativeExpression)*
 	;
 	
 OpAdd:
 	'+' | '-'
 ;
 
-multiplicative_expression returns expression
+MultiplicativeExpression returns ExpressionC
 	: //cast_expression (=>({MultExp.left=current} OpMult) right=cast_expression)*
-		unary_expression (=>({MultExp.left=current} OpMult) right=unary_expression)*
+		UnaryExpression (=>({MultExp.left=current} OpMult) right=UnaryExpression)*
 	;
 
 OpMult:
@@ -122,24 +122,24 @@ OpMult:
 //	: cast+=cast_rule* =>unaryExp+=unary_expression
 //	;
 
-cast_rule:
-	'(' type=types ')'
-;
-
-unary_expression
-	: {UnaryExp}
-	( postexp=postfix_expression
-	| OpInc unExp+=unary_expression
-	//| '++' unExp=unary_expression
-	//| '--' unExp=unary_expression
-	//| OpUnary castExp=cast_expression
-	| OpUnary castExp=unary_expression
-	| 'sizeof' unExp+=unary_expression
-	| cast=cast_rule unExp2=unary_expression
-	//| 'sizeof' cast_rule
-	| '_Alignof' c=unary_expression
-	)
+UnaryExpression returns ExpressionC
+	: postExp=PostfixExpression
+	| (c=CastRule
+		|'sizeof'
+		|OpUnary
+		|OpInc
+		|'_Alignof'
+	) unExp=UnaryExpression
+	//| OpInc unExp=UnaryExpression
+	//| OpUnary castExp=UnaryExpression
+	//| 'sizeof' unExp=UnaryExpression
+	//| cast=CastRule unExp=UnaryExpression
+	//| '_Alignof' c=UnaryExpression
 	;
+
+CastRule:
+	'(' type=Types ')'
+;
 
 OpInc:
 	"++" | "--"
@@ -149,17 +149,17 @@ OpUnary:
 	'&' | '*' | '+' | '-' | '~' | '!'
 ;
 
-postfix_expression
-	: {tantofaz} 
-	(  primaryExp+=primary_expression
-	| postType+=postfix_type
-	) postfix2+=postfix_expression2*
+PostfixExpression returns ExpressionC
+	: {PostfixExpression} 
+	(  primaryExp=PrimaryExpression
+	| postType=PostfixType
+	) postfix2+=PostfixExpression2*
 	;
 
-postfix_expression2
-	: {PostFixExp2}
-	( '[' exppost=expression ']'
-	| '(' argumentExpList+=argument_expression_list? ')'
+PostfixExpression2 returns PostfixExpression
+	: {PostfixExpression2}
+	( '[' exppost=ExpressionC ']'
+	| '(' argumentExpList+=ArgumentExpressionList? ')'
 	| '.' ID
 	| OpPtr ID
 	| OpInc
@@ -170,29 +170,29 @@ OpPtr:
 	'->'
 ;
 
-postfix_type:
-	cast_rule '{' init=initializer_list ','? '}'
+PostfixType:
+	CastRule '{' init=InitializerList ','? '}'
 ;
 
-primary_expression
-	: str=STRING
-	| const=constant
-	| id=ID
-	| '(' exp=expression ')'
-	| generic=generic_selection
+PrimaryExpression returns ExpressionC
+	: {StrConst} str=STRING
+	| Constant
+	| {Identifier} name=ID
+	| '(' ExpressionC ')'
+	| GenericSelection
 ;	
 
-argument_expression_list
-	: assignment_expression (=>({ArgumentExp.left=current} ',') right=assignment_expression)*
+ArgumentExpressionList
+	: AssignmentExpression (=>({ArgumentExp.left=current} ',') right=AssignmentExpression)*
 	;
 
-constant
-	: I_CONSTANT		/* includes character_constant */
-	| F_CONSTANT
+Constant
+	: {IntConst} intC=I_CONSTANT		/* includes character_constant */
+	| {FloatConst} floatC=F_CONSTANT
 	//| ??? ENUMERATION_CONSTANT ??	/* after it has been defined as such */
 	;
 
-enumeration_constant		/* before it has been defined as such */
+EnumerationConstant		/* before it has been defined as such */
 	: _ID=ID
 	;
 
@@ -203,45 +203,45 @@ enumeration_constant		/* before it has been defined as such */
 	; */
 
 
-generic_selection
-	: '_Generic' '(' exp=assignment_expression ',' genericAssocList=generic_assoc_list ')'
+GenericSelection
+	: '_Generic' '(' exp=AssignmentExpression ',' genericAssocList=GenericAssocList ')'
 	;
 
-generic_assoc_list
-	: generic_association (=>({GenericAssoc.left=current} ',') right=generic_association)*
+GenericAssocList
+	: GenericAssociation (=>({GenericAssoc.left=current} ',') right=GenericAssociation)*
 	;
 
-generic_association
-	: type=type_name ':' assExp=assignment_expression
-	| 'default' ':' exp=assignment_expression
+GenericAssociation
+	: type=TypeName ':' assExp=AssignmentExpression
+	| 'default' ':' exp=AssignmentExpression
 	;
 
 
 pre_declaration:
-	declarationSpec+=declaration_specifier+
+	declarationSpec+=DeclarationSpecifier+
 ;
 
-declaration
-	: {DeclarationInitDeclaratorList} declarationSpec+=declaration_specifier+ declaratorList=init_declarator_list? ';'
-	| static_assert_declaration
+Declaration
+	: {DeclarationInitDeclaratorList} declarationSpec+=DeclarationSpecifier+ declaratorList=InitDeclaratorList? ';'
+	| StaticAssertDeclaration
 	;
 
-declaration_specifier
-	: storeClassSpec+=storage_class_specifier
-	| typeSpec+=type_specifier
-	| funcSpec+=function_specifier
-	| alignmentSpec+=alignment_specifier
+DeclarationSpecifier
+	: storeClass=StorageClassSpecifier
+	| TypeSpecifier
+	| funcSpec=FunctionSpecifier
+	| AlignmentSpecifier
 	;
 
-init_declarator_list
-	: init_declarator (=>({IniDeclarator.left=current}',') right=init_declarator)*
+InitDeclaratorList
+	: InitDeclarator (=>({IniDeclarator.left=current}',') right=InitDeclarator)*
 	;
 
-init_declarator
-	: declarator=declarator ('=' init=initializer)?
+InitDeclarator
+	: Declarator ('=' init=Initializer)?
 	;
 
-storage_class_specifier
+StorageClassSpecifier
 	: 'typedef'	/* identifiers must be flagged as TYPEDEF_NAME */
 	| 'extern'
 	| 'static'
@@ -250,16 +250,16 @@ storage_class_specifier
 	| 'register'
 	;
 
-type_specifier
-	: {type_specifier}
-	( type=types
-	| atomicType=atomic_type_specifier
-	| structSpec=struct_or_union_specifier
-	|  enumSpec=enum_specifier
+TypeSpecifier
+	: {TypeSpecifier}
+	( type=Types
+	| atomicType=AtomicTypeSpecifier
+	| structSpec=StructOrUnionSpecifier
+	|  enumSpec=EnumSpecifier
 	)
 	//| ???? TYPEDEF_NAME ????		/* after it has been defined as such */
 	;
-types:
+Types:
 	'void'
 	| 'char'
 	| 'short'
@@ -274,266 +274,271 @@ types:
 	| 'imaginary'	  	/* non-mandated extension */
 ;
 
-struct_or_union_specifier
-	: {StructList} struct_or_union '{' structList=struct_declaration_list '}'
-	| {StructAssignList} struct_or_union ID/*IDENTIFIER*/ ('{' structList=struct_declaration_list '}')?
+StructOrUnionSpecifier
+	: {StructList} StructOrUnion 
+	( '{' structList=StructDeclarationList '}'
+	| ID ('{' structList=StructDeclarationList '}')?
+	)
 	;
 
-struct_or_union
+StructOrUnion
 	: 'struct'
 	| 'union'
 	;
 
-struct_declaration_list
-	: structDeclaration+=struct_declaration+
+StructDeclarationList
+	: structDeclaration+=StructDeclaration+
 	;
 
-struct_declaration
-	: {SpecifierStuctList} specifierList=specifier_qualifier_list structList=struct_declarator_list? ';'
-	| static_assert_declaration
+StructDeclaration
+	: {SpecifierStuctList} specifierList=SpecifierQualifierList structList=StructDeclaratorList? ';'
+	| StaticAssertDeclaration
 	;
 
-specifier_qualifier_list
-	: {TypeSpecifierList} (=>type+=type_specifier | typeQual+=type_qualifier)+
+SpecifierQualifierList
+	: {TypeSpecifierList} (=>type+=TypeSpecifier | typeQual+=TypeQualifier)+
 	;
 
 
-struct_declarator_list
-	: struct_declarator (=>({StructList.left=current} ',') right=struct_declarator)*
+StructDeclaratorList
+	: StructDeclarator (=>({StructList.left=current} ',') right=StructDeclarator)*
 	;
 	
-struct_declarator
-	: {StructConstantExp} ':' constantExp=constant_expression
-	| {DeclaratorConstantExp} decl=declarator (':' constantExp=constant_expression)?
+StructDeclarator
+	: {StructConstantExp} ':' constantExp=ConstantExpression
+	| {DeclaratorConstantExp} decl=Declarator (':' constantExp=ConstantExpression)?
 	;
 
-enum_specifier
+EnumSpecifier
 	: {EnumSpecific} 'enum' 
-	( '{' enumList=enumerator_list ','? '}'
-	| ID ('{' enumList=enumerator_list ','? '}')?
+	( '{' enumList=EnumeratorList ','? '}'
+	| ID ('{' enumList=EnumeratorList ','? '}')?
 	)
 	;
 
-enumerator_list
-	: enumerator (=>({EnumList.left=current} ',') right=enumerator)*
+EnumeratorList
+	: Enumerator (=>({EnumList.left=current} ',') right=Enumerator)*
 	;
 
-enumerator	/* identifiers must be flagged as ENUMERATION_CONSTANT */
-	: {EnumAtt} enumConst=enumeration_constant ('=' exp=constant_expression)?
+Enumerator	/* identifiers must be flagged as ENUMERATION_CONSTANT */
+	: {EnumAtt} enumConst=EnumerationConstant ('=' exp=ConstantExpression)?
 	;
 
-atomic_type_specifier
-	: '_Atomic' cast_rule
+AtomicTypeSpecifier
+	: '_Atomic' CastRule
 	;
 
-type_qualifier
+TypeQualifier
 	: 'const'
 	| 'restrict'
 	| 'volatile'
 	| '_Atomic'
 	;
 
-function_specifier
+FunctionSpecifier
 	: 'inline'
 	| '_Noreturn'
 	;
 
-alignment_specifier
-	: {Alignment} Alignas '(' (type=type_name|exp=constant_expression) ')'
+AlignmentSpecifier
+	: {Alignment} Alignas '(' (type=TypeName|exp=ConstantExpression) ')'
 	;
 
 Alignas:
 	'_Alignas'
 ;
 
-declarator
-	: point=pointer? directDecl=direct_declarator
+Declarator
+	: Pointer? directDecl=DirectDeclarator
 	;
 
-direct_declarator
-	: {DirectDecl}
-	(  ID 	| '(' dc=declarator? ')') declarator2+=direct_declarator2*
+DirectDeclarator
+	: {DirectDeclarator}
+	(  name=ID 	| '(' dc=Declarator? ')') declarator2+=DirectDeclarator2*
 	;
 
-direct_declarator2 returns direct_declarator
-	: {direct_declarator2}
+DirectDeclarator2 returns DirectDeclarator
+	: {DirectDecl2}
 	('[' '*'? ']'
-	| '[' 'static' typeQualList=type_qualifier_list exp=assignment_expression ']'
-	| '[' 'static' exp=assignment_expression ']'
-	| '[' typeQualList=type_qualifier_list '*' ']'
-	| '[' typeQualList=type_qualifier_list 'static' exp=assignment_expression ']'
-	| '[' typeQualList=type_qualifier_list exp=assignment_expression ']'
-	| '[' typeQualList=type_qualifier_list ']'
-	| '[' exp=assignment_expression ']'
-	| '(' (idList=identifier_list|paramList=parameter_type_list)? ')'
+	| '[' 'static' typeQualList=TypeQualifierList exp=AssignmentExpression ']'
+	| '[' 'static' exp=AssignmentExpression ']'
+	| '[' typeQualList=TypeQualifierList '*' ']'
+	| '[' typeQualList=TypeQualifierList 'static' exp=AssignmentExpression ']'
+	| '[' typeQualList=TypeQualifierList exp=AssignmentExpression ']'
+	| '[' typeQualList=TypeQualifierList ']'
+	| '[' exp=AssignmentExpression ']'
+	| '(' (idList=IdentifierList|paramList=ParameterTypeList)? ')'
 	)
 	;
 
-pointer
-	: {PointerRule} '*' =>(typeQualList+=type_qualifier | '*')* 
+Pointer
+	: {PointerRule} '*' =>(typeQualList+=TypeQualifier | '*')* 
 	;
 
-type_qualifier_list
-	: typeQualList += type_qualifier+
+TypeQualifierList
+	: typeQualList += TypeQualifier+
 	;
 
-parameter_type_list
-	: parameter_list (',' '...')?
+ParameterTypeList
+	: ParameterList (',' '...')?
 	;
 
-parameter_list
-	: parameter_declaration (=>({ParameterDeclarationList.left=current} ',') right=parameter_declaration)*
+ParameterList
+	: ParameterDeclaration (=>({ParameterDeclarationList.left=current} ',') right=ParameterDeclaration)*
 	;
 
-parameter_declaration
-	: {DeclarationAbstract} declarationSpec+=declaration_specifier+ (abstract=abstract_declarator|=>declarator=declarator)?
+ParameterDeclaration
+	: {DeclarationAbstract} declarationSpec+=DeclarationSpecifier+ (abstract=AbstractDeclarator|=>declarator=Declarator)?
 	;
 
-identifier_list
+IdentifierList
 	: ID (',' ID)*
 	;
 
-type_name
-	: {TypeNameRule} specifierQualList=specifier_qualifier_list =>absDeclarator=abstract_declarator?
+TypeName
+	: {TypeNameRule} specifierQualList=SpecifierQualifierList =>absDeclarator=AbstractDeclarator?
 
 	;
 
-abstract_declarator returns DirectAbstractDeclarator
-	: {AbstractDeclaratorPointer} point=pointer abstractDeclarator=direct_abstract_declarator?
-	| abstractDeclarator=direct_abstract_declarator
+AbstractDeclarator returns DirectAbstractDeclarator
+	: {AbstractDeclaratorPointer} point=Pointer abstractDeclarator=DirectAbstractDeclarator?
+	| abstractDeclarator=DirectAbstractDeclarator
 	;
 
-direct_abstract_declarator returns DirectAbstractDeclarator
-	: '(' abstract_declarator ')' direct_declarator2+=direct_abstract_declarator2*
+DirectAbstractDeclarator returns DirectAbstractDeclarator
+	: '(' AbstractDeclarator ')' direct_declarator2+=DirectAbstractDeclarator2*
 	;
 
-direct_abstract_declarator2
+DirectAbstractDeclarator2
 	: {direct_declarator2}
 	(  '[' '*'? ']'
-	| '[' 'static' typeQualList=type_qualifier_list exp=assignment_expression ']'
-	| '[' 'static' exp=assignment_expression ']'
-	| '[' typeQualList=type_qualifier_list 'static' exp=assignment_expression ']'
-	| '[' typeQualList=type_qualifier_list exp=assignment_expression ']'
-	| '[' typeQualList=type_qualifier_list ']'
-	| '[' exp=assignment_expression ']'
-	| '(' paramList=parameter_type_list? ')'
+	| '[' 'static' typeQualList=TypeQualifierList exp=AssignmentExpression ']'
+	| '[' 'static' exp=AssignmentExpression ']'
+	| '[' typeQualList=TypeQualifierList 'static' exp=AssignmentExpression ']'
+	| '[' typeQualList=TypeQualifierList exp=AssignmentExpression ']'
+	| '[' typeQualList=TypeQualifierList ']'
+	| '[' exp=AssignmentExpression ']'
+	| '(' paramList=ParameterTypeList? ')'
 	)
 	
 	;
 
-initializer returns initializer
-	: {init_list} '{' init=initializer_list ','? '}'
-	 | exp=assignment_expression
+Initializer returns initializer
+	: {init_list} '{' init=InitializerList ','? '}'
+	 | exp=AssignmentExpression
 	;
 
-initializer_list
-	: initializer_list_terminal (=>({InitLis.left=current} ',') right=initializer_list_terminal)*
+InitializerList
+	: InitializerList2 (=>({InitLis.left=current} ',') right=InitializerList2)*
 	;
 	
-initializer_list_terminal returns initializer_list
-	: Desig=designation? Init=initializer
+InitializerList2 returns InitializerList
+	: Desig=Designation? Init=Initializer
 	;
 
-designation
-	: designator_list '='
+Designation
+	: DesignatorList '='
 	;
 
-designator_list
-	:  DesignatorList += designator
+DesignatorList
+	:  DesignatorList += Designator
 	;
 
-designator
-	: '[' constExp=constant_expression ']'
+Designator
+	: '[' constExp=ConstantExpression ']'
 	| =>'.' _ID=ID
 	;
 
-static_assert_declaration
-	: '_Static_assert' '(' constExp=constant_expression ',' literal=STRING ')' ';'
+StaticAssertDeclaration
+	: '_Static_assert' '(' constExp=ConstantExpression ',' literal=STRING ')' ';'
 	;
 
-statement returns statement
-	: labeled_statement
-	| compound_statement
-	| expression_statement
-	| selection_statement
-	| iteration_statement
-	| jump_statement
+Statement returns Statement
+	: LabeledStatement
+	| CompoundStatement
+	| ExpressionStatement
+	| SelectionStatement
+	| IterationStatement
+	| JumpStatement
 	;
 
-labeled_statement returns statement
-	: ID ':' right=statement
-	| 'case' exp=constant_expression ':' right=statement
-	| 'default' ':' right=statement
+LabeledStatement returns Statement
+	: ID ':' right=Statement
+	| 'case' exp=ConstantExpression ':' right=Statement
+	| 'default' ':' right=Statement
 	;
 
-compound_statement
-	: {CompoundStmt} '{'  blockList=block_item_list? '}'
+CompoundStatement
+	: {CompoundStatement} '{'  blockList+=BlockItem* '}'
 	;
 	
-block_item_list
-	:  BlockItemt+=block_item+
+BlockItemList
+	:  BlockItemt+=BlockItem+
 	;
 	
-block_item
-	: declaration
-	| statement
+BlockItem
+	: Declaration
+	| Statement
 	;
 
-expression_statement
-	: {ExpressionStmt} exp=expression? ';'
+ExpressionStatement
+	: {ExpressionStatement} exp=ExpressionC? ';'
 	;
 
-selection_statement returns statement
-	: if_statement
-	| switch_statement
+SelectionStatement returns Statement
+	: IfStatement
+	| SwitchStatement
 	;
 
-iteration_statement returns statement
-	: while_loop
-	| do_loop
-	| for_loop
+IterationStatement returns Statement
+	: WhileLoop
+	| DoWhileLoop
+	| ForLoop
 	;
 
-if_statement returns statement:
+IfStatement returns Statement:
 		{IfStatement}
-		'if' '(' cond=expression ')'
-		then=statement
-		(=>'else' else=statement)?	
+		'if' '(' cond=ExpressionC ')'
+		then=Statement
+		(=>'else' else=Statement)?	
 	;
 
-switch_statement returns statement:
+SwitchStatement returns Statement:
 	{SwitchStatement}
-	'switch' '(' switchExp=expression ')'
-	stmt=statement
+	'switch' '(' switchExp=ExpressionC ')'
+	stmt=Statement
 ;
 
-for_loop returns statement:
+ForLoop returns Statement:
 	{ForLoop}
-	'for' '(' (exp1=expression_statement|declaration=declaration)  exp2=expression_statement (exp3=expression)? ')'
-	body=statement
+	'for' '(' (exp1=ExpressionStatement|declaration=Declaration)  exp2=ExpressionStatement (exp3=ExpressionC)? ')'
+	body=Statement
 ;
 
-while_loop returns statement:
+WhileLoop returns Statement:
 	{WhileLoop}
-	'while' '(' cond=expression ')'
-	body=statement
+	'while' '(' cond=ExpressionC ')'
+	body=Statement
 ;
 
-do_loop returns statement:
-	{DoLoop}
-	'do' body=statement
-	'while' '(' cond=expression ')' ';'
+DoWhileLoop returns Statement:
+	{DoWhileLoop}
+	'do' body=Statement
+	'while' '(' cond=ExpressionC ')' ';'
 ;
 
-jump_statement
-	: {JumpStmt}
+JumpStatement
+	: {JumpStatement}
 	( 'goto' ID ';'
 	| 'continue' ';'
 	| 'break' ';'
-	| 'return' exp=expression_statement
+	| ret=CReturn
 	)
 	;
-	
+
+CReturn:
+	{CReturn} 'return' expR=ExpressionC? ';'	
+;
 //////////////////////////////////
 //////////  TERMINAIS  ///////////
 //////////////////////////////////

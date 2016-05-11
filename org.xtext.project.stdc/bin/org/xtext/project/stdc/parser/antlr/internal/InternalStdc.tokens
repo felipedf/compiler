@@ -5,8 +5,8 @@
 '&&'=35
 '&'=38
 '&='=27
-'('=49
-')'=50
+'('=51
+')'=52
 '*'=46
 '*='=24
 '+'=44
@@ -36,7 +36,7 @@
 ']'=58
 '^'=37
 '_Alignas'=93
-'_Alignof'=52
+'_Alignof'=50
 '_Atomic'=87
 '_Generic'=63
 '_Noreturn'=92
@@ -69,7 +69,7 @@
 'return'=106
 'short'=74
 'signed'=79
-'sizeof'=51
+'sizeof'=49
 'static'=68
 'struct'=84
 'switch'=99

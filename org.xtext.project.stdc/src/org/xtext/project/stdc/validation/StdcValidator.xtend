@@ -3,6 +3,19 @@
  */
 package org.xtext.project.stdc.validation
 
+import org.eclipse.xtext.validation.Check
+import org.xtext.project.stdc.stdc.AssignmentExpression
+import org.xtext.project.stdc.stdc.DeclarationInitDeclaratorList
+import org.xtext.project.stdc.stdc.DirectDeclarator
+import org.xtext.project.stdc.stdc.ExpressionC
+import org.xtext.project.stdc.stdc.FunctionDefinition
+import org.xtext.project.stdc.stdc.Identifier
+import org.xtext.project.stdc.stdc.PostfixExpression
+import org.xtext.project.stdc.stdc.StdcPackage
+import org.xtext.project.stdc.stdc.TypeSpecifier
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.xtext.project.stdc.validation.StdcUtil.*
 
 /**
  * This class contains custom validation rules. 
@@ -10,16 +23,161 @@ package org.xtext.project.stdc.validation
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class StdcValidator extends AbstractStdcValidator {
+			
+	public static val INVALID_NAME = 'invalidName'
+	public static val DUPLICATE_ELEMENT = ' There is a variable name conflict'
+	public static val FUNCTION_DUPLICATE = ' There is another method with same name'
+
+	@Check
+	def checkExistReturn(FunctionDefinition f) {
+		var nReturns = f.returnStatement.size;
+		val ftype = f.declarationSpec.filter(typeof(TypeSpecifier)).head.type
+		if(nReturns == 0 && ftype != 'void') {
+			error('Method should have a return',StdcPackage.Literals.FUNCTION_DEFINITION__BODY,
+				INVALID_NAME)
+		}
+	}
 	
-//  public static val INVALID_NAME = 'invalidName'
-//
-//	@Check
-//	def checkGreetingStartsWithCapital(Greeting greeting) {
-//		if (!Character.isUpperCase(greeting.name.charAt(0))) {
-//			warning('Name should start with a capital', 
-//					StdcPackage.Literals.GREETING__NAME,
-//					INVALID_NAME)
-//		}
-//	}
+	@Check
+	def checkTypeFunctionAndReturn(FunctionDefinition f) {
+		var typeF = f.declarationSpec.filter(typeof(TypeSpecifier)).map[type].head;
+		var returnExp = f.returnStatement.head.expR.postExp
+		if(returnExp != null) { 
+			if( returnExp instanceof PostfixExpression) {
+				returnExp = (returnExp as PostfixExpression).primaryExp
+			}
+		}
+		var typeR = returnExp.typeActual
+		var ok = true
+		if(typeF == 'void' && (typeR != null || typeR != 'void')) ok = false
+		else if(typeF == 'char' && typeR != 'char*') ok = false
+		else if(typeF != 'char' && typeR == 'char*') ok = false
+		if(!ok) {
+			error("The return type is incompatible Expected'"+typeF+
+				"' but was "+typeR,StdcPackage.Literals.FUNCTION_DEFINITION__DECLARATION_SPEC,
+				INVALID_NAME)
+		}
+	}
 	
+	@Check 
+	def checkValidTypesFunction(FunctionDefinition f) {
+		val ntypes = f.declarationSpec.filter(typeof(TypeSpecifier)).map[type];
+		var ok = false;
+		var totalL = 0;
+		var totalO = 0;
+		if(ntypes.size > 1 || ntypes.size <= 3) {
+			for(t : ntypes) {
+				if(t == 'long') totalL++;
+				if(t == 'unsigned') totalO++;
+				if(t == 'signed') totalO++;
+			}
+		}
+		if((totalL <= 2 || totalO <= 1) && (totalL+totalO+1) == ntypes.size ) ok = true;
+		
+		if(ntypes.size == 1 && ntypes.head!='unsigned' && ntypes.head!='signed' ) ok =true; 
+		
+		if(!ok) {
+			error('Two or more data types in declaration specifiers',StdcPackage.Literals.FUNCTION_DEFINITION__DECLARATION_SPEC,
+				INVALID_NAME)
+		}
+	}
+	
+	@Check 
+	def checkTypesDeclaration(DeclarationInitDeclaratorList d) {
+		val ntypes = d.declarationSpec.filter(typeof(TypeSpecifier)).map[type];
+		var ok = false;
+		var totalL = 0;
+		var totalO = 0;
+		if(ntypes.size > 1 || ntypes.size <= 3) {
+			for(t : ntypes) {
+				if(t == 'long') totalL++;
+				if(t == 'unsigned') totalO++;
+				if(t == 'signed') totalO++;
+			}
+		}
+		if((totalL <= 2 || totalO <= 1) && (totalL+totalO+1) == ntypes.size ) ok = true;
+		if(ntypes.size == 1 && ntypes.head!='unsigned' && ntypes.head!='signed' ) ok =true;
+		if(!ok) {
+			error('Two or more data types in declaration specifiers',StdcPackage.Literals.DECLARATION_INIT_DECLARATOR_LIST__DECLARATION_SPEC,
+				INVALID_NAME)
+		}
+	}
+	
+	@Check
+	def checkTypes(ExpressionC exp) {
+		val isSameType = exp.expectedType
+		if(isSameType==false) {
+				error("Types are incompatible",StdcPackage.Literals.EXPRESSION_C__POST_EXP,
+				INVALID_NAME)
+		}
+	}
+
+	@Check
+	def checkAssignmentsConstraints(ExpressionC e) {
+		val c = e.eContainer
+		val f = e.eContainingFeature
+		if(c instanceof AssignmentExpression) {
+			if(f == StdcPackage::eINSTANCE.getAssignmentExpression_Right) {
+				val rightExp=e.expectedType
+				//Verifica se a assignment expression eh atribuida a um ID
+				if(!(rightExp instanceof Identifier)) {
+					error('Invalid Assignment',StdcPackage.Literals.EXPRESSION_C__POST_EXP,
+				INVALID_NAME)
+				}
+				else if(rightExp instanceof Identifier) {
+					val previousDecl = e.containingMethod.body.
+						getAllContentsOfType(typeof(DirectDeclarator)).findFirst[
+							it.name == rightExp.name]
+					if(previousDecl == null) {
+						error('Variable was not previously declared',StdcPackage.Literals.EXPRESSION_C__POST_EXP,
+							INVALID_NAME)
+					}
+					else if(previousDecl != null) {
+						val typeDecl = previousDecl.containingDeclaration.declarationSpec.filter(
+							typeof(TypeSpecifier)
+						).map[type].head
+						var right = c.right.postExp
+						if(right != null) { 
+							if( right instanceof PostfixExpression) {
+								right = (right as PostfixExpression).primaryExp
+							}
+						}
+						if(typeDecl!=right.typeActual) {
+							error("Types are incompatible Expected '"+typeDecl+
+								"' but was '"+right.typeActual+"'",
+								StdcPackage.Literals.EXPRESSION_C__POST_EXP,
+								INVALID_NAME)							
+						}				
+					} 
+				}
+			}
+		}
+	}
+
+	@Check
+	def void checkNoDuplicateVariable(DirectDeclarator vardecl) {
+		val duplicate = vardecl.containingMethod.body.
+			getAllContentsOfType(typeof(DirectDeclarator)).findFirst[
+				it != vardecl && it.name == vardecl.name		
+			]
+		if (duplicate != null)
+			error("Conflicting declaration '" + vardecl.name + "'",
+				StdcPackage.Literals.DIRECT_DECLARATOR__NAME,
+				DUPLICATE_ELEMENT
+			)
+	}
+	
+	@Check
+	def void checkDuplicateMethod(FunctionDefinition f) {
+		val fname = f.decla.directDecl.name
+		val overridden = f.containingClass.exDeclaration.
+			filter(typeof(FunctionDefinition)).findFirst[it != f && it.decla.directDecl.name == fname]
+		
+		if (overridden != null) {
+				error('"The function '+fname+' must have a different name"',
+					StdcPackage.Literals.FUNCTION_DEFINITION__DECLA,
+					FUNCTION_DUPLICATE
+				)
+		}
+	}	
 }
