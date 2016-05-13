@@ -16,9 +16,11 @@ import org.xtext.project.stdc.stdc.IfStatement
 import org.xtext.project.stdc.stdc.WhileLoop
 import org.xtext.project.stdc.stdc.DoWhileLoop
 import org.xtext.project.stdc.stdc.initializer
-import org.xtext.project.stdc.stdc.DirectDeclarator
-import org.xtext.project.stdc.stdc.StdcPackage
-import com.sun.org.apache.bcel.internal.generic.ArithmeticInstruction
+import org.xtext.project.stdc.stdc.PostfixExpression
+import org.xtext.project.stdc.stdc.impl.IntConstImpl
+import org.xtext.project.stdc.stdc.Declaration
+import org.xtext.project.stdc.stdc.impl.TypeSpecifierImpl
+import org.xtext.project.stdc.stdc.impl.DeclaratorImpl
 
 /**
  * Generates code from your model files on save.
@@ -29,10 +31,17 @@ class StdcGenerator extends AbstractGenerator {
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		var str = ''
-		for (e : resource.allContents.toIterable.filter(ExpressionC)) {
-			str = str + e.compile + "\n"
+		for (e : resource.allContents.toIterable.filter(Declaration)) {
+			
+			str = str + compile(e) + "\n"
 		}
 		fsa.generateFile('greetings.txt', str)
+	}
+	
+	def compile(Declaration i) {
+		return i.eContents.filter(DeclaratorImpl).join() + "\n" + 
+			i.eContents.filter(DeclaratorImpl).get(0) + "\n" 
+		//return i.eContents.filter(DeclaratorImpl).join()
 	}
 	
 	def compile(initializer i) {
@@ -67,9 +76,13 @@ class StdcGenerator extends AbstractGenerator {
 		return 'dowhile'
 	}
 	
+	def compile(PostfixExpression p) {
+		return p.eAllContents.join()
+	}
 	
 	def compile(ExpressionC e) {
-		return e.eContainer.eResource.resourceSet.resources.get(0)
+		return e.eAllContents.filter(typeof(IntConstImpl)).map[intC]
+		//eResource.resourceSet.resources.get(0)
 		//val c = e.eContainer
 		//val f = e.eContainingFeature	
 		//if(c instanceof AssignmentExpression) {
