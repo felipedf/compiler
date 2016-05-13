@@ -7,6 +7,18 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import org.xtext.project.stdc.stdc.ExpressionC
+import org.xtext.project.stdc.stdc.AssignmentExpression
+import org.xtext.project.stdc.stdc.ConstantExpression
+import org.xtext.project.stdc.services.StdcGrammarAccess.PrimaryExpressionElements
+import org.xtext.project.stdc.stdc.ForLoop
+import org.xtext.project.stdc.stdc.IfStatement
+import org.xtext.project.stdc.stdc.WhileLoop
+import org.xtext.project.stdc.stdc.DoWhileLoop
+import org.xtext.project.stdc.stdc.initializer
+import org.xtext.project.stdc.stdc.DirectDeclarator
+import org.xtext.project.stdc.stdc.StdcPackage
+import com.sun.org.apache.bcel.internal.generic.ArithmeticInstruction
 
 /**
  * Generates code from your model files on save.
@@ -16,10 +28,56 @@ import org.eclipse.xtext.generator.IGeneratorContext
 class StdcGenerator extends AbstractGenerator {
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-//		fsa.generateFile('greetings.txt', 'People to greet: ' + 
-//			resource.allContents
-//				.filter(typeof(Greeting))
-//				.map[name]
-//				.join(', '))
+		var str = ''
+		for (e : resource.allContents.toIterable.filter(ExpressionC)) {
+			str = str + e.compile + "\n"
+		}
+		fsa.generateFile('greetings.txt', str)
 	}
+	
+	def compile(initializer i) {
+		return 'inicializador'
+	} 
+	
+	def compile(IfStatement i) {
+		return 'if'
+	}
+	
+	def compile(ForLoop f) {
+		return 'for'
+	}
+	
+	def compile(PrimaryExpressionElements p) {
+		return 'primary expression'
+	}
+	
+	def compile(ConstantExpression c) {
+		return 'constant'
+	}
+	
+	def compile(AssignmentExpression a) {
+		return 'assigment'
+	}
+	
+	def compile(WhileLoop w) {
+		return 'while'
+	}
+	
+	def compile(DoWhileLoop d) {
+		return 'dowhile'
+	}
+	
+	
+	def compile(ExpressionC e) {
+		return e.eContainer.eResource.resourceSet.resources.get(0)
+		//val c = e.eContainer
+		//val f = e.eContainingFeature	
+		//if(c instanceof AssignmentExpression) {
+		//	if (f instanceof AssignmentExpression) {
+		//		return c.compile + f.compile
+		//	}
+		//}
+	}
+        
+        
 }
