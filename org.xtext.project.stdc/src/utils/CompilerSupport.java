@@ -19,10 +19,6 @@ public class CompilerSupport {
 		for (EObject e : obj.eContents()) {
 			codigo += generalCompile(e);
 		}
-		String classe = obj.getClass().getSimpleName(); 
-		if (classe.equals("DoWhileLoopImpl")) {
-			codigo = tabCode(codigo);
-		}
 		return codigo; 
 				//+ "ME: " + classe + " " + "Pai: " + obj.eContainer().getClass().getSimpleName() + "\n";
 	}
