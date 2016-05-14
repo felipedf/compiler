@@ -86,7 +86,7 @@ public class CompilerSupport {
 	private static String compileDoWhileLoopImpl(EObject obj) {
 		String codigo = "BNEZ #1, L" + loopCount + "\n";
 		codigo +=  "L" + loopCount + ": \n"; 
-		codigo += getCodeFromContents(obj);
+		codigo += tabCode(getCodeFromContents(obj));
 		loopCount++;
 		return codigo;
 	}
@@ -112,7 +112,10 @@ public class CompilerSupport {
 	}
 	
 	private static String compileCompoundStatementImpl(EObject obj) {
-		return tabCode(getCodeFromContents(obj));
+		if (obj.eContainer().getClass().getSimpleName().equals("FunctionDefinitionImpl")) {
+			return tabCode(getCodeFromContents(obj));	
+		}
+		return getCodeFromContents(obj);
 	}
 	
 	private static String compileJumpStatementImpl(EObject obj) {
