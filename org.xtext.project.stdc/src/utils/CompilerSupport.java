@@ -31,18 +31,16 @@ public class CompilerSupport {
 	
 	public static String compileDeclarationInitDeclaratorListImpl(EObject obj) {
 		String codigo = "";
-		for (EObject eObject : obj.eContents()) {
-			if (eObject.getClass().getSimpleName().equals("DeclaratorImpl")) {		
-				codigo += compileDeclaratorImpl(eObject);
-			}	
+		for (EObject e : obj.eContents()) {
+			codigo += generalCompile(e);
 		}
 		return codigo;
 	}
 	
-	private static String compileDeclaratorImpl(EObject e) {
+	private static String compileDeclaratorImpl(EObject obj) {
 		String id = "";
 		String codigo = "";
-		for (EObject eObject : e.eContents()) {
+		for (EObject eObject : obj.eContents()) {
 			String className = eObject.getClass().getSimpleName();
 			if (className.equals("initializerImpl")) {
 				codigo += compileInitializerImpl(eObject);
@@ -52,7 +50,7 @@ public class CompilerSupport {
 		}
 		String reg = "R" + registerCount;
 		codigo += "ST " + id + ", " + reg + "\n";
-		return codigo;
+		return (!codigo.isEmpty() ? codigo : "DeclaratorImpl" + obj.eContents());
 	}
 
 	private static String compileInitializerImpl(EObject obj) {
@@ -65,43 +63,50 @@ public class CompilerSupport {
 				codigo += compileAddExpImpl(eObject);	
 			}	
 		}
-		return (!codigo.isEmpty() ? codigo : "Initializer" + obj.eContents().get(0).getClass());
+		return (!codigo.isEmpty() ? codigo : "Initializer" + obj.eContents());
 	}
 	
-	private static String compileAddExpImpl(EObject eObject) {
+	private static String compileAddExpImpl(EObject obj) {
 		String codigo = "";
-		for (int i=0; i < eObject.eContents().size(); i++) {
-			codigo += compileExpressionCImpl(eObject.eContents().get(i));
+		for (EObject e : obj.eContents()) {
+			String className = e.getClass().getSimpleName(); 
+			if (className.equals("ExpressionCImpl")) {
+				codigo += compileExpressionCImpl(e);	
+			}
 		}
 		registerCount++;
 		codigo += "ADD " + "R" + registerCount + ", " + regsFila.toArray()[0] 
 				+ ", " + regsFila.toArray()[1] + "\n";
 		regsFila.clear();
-		return (!codigo.isEmpty() ? codigo : "AddExpImpl" + eObject.eContents().get(0).getClass());
+		return (!codigo.isEmpty() ? codigo : "AddExpImpl" + obj.eContents());
 	}
 	
-	private static String compileExpressionCImpl(EObject eObject) {
+	private static String compileExpressionCImpl(EObject obj) {
 		String codigo = "";
-		if (eObject.eContents().get(0).getClass()
-				.getSimpleName().equals("PostfixExpressionImpl")) {
-			registerCount++;
-			String reg = "R" + registerCount;
-			regsFila.add(reg);
-			String value = compilePostfixExpressionImpl(eObject.eContents().get(0));
-			codigo += "LD " + reg + ", " + value + "\n";
+		for (EObject e : obj.eContents()) {
+			String className = e.getClass().getSimpleName(); 
+			if (className.equals("PostfixExpressionImpl")) {
+				registerCount++;
+				String reg = "R" + registerCount;
+				regsFila.add(reg);
+				String value = compilePostfixExpressionImpl(e);
+				codigo += "LD " + reg + ", " + value + "\n";	
+			}
 		}
-		return (!codigo.isEmpty() ? codigo : "ExpressionC" + eObject.eContents().get(0).getClass());
+		return (!codigo.isEmpty() ? codigo : "ExpressionC" + obj.eContents());
 	}
 	
-	private static String compilePostfixExpressionImpl(EObject eObject) {
-		if (eObject.eContents().get(0).getClass()
-				.getSimpleName().equals("IntConstImpl")) {
-			return compileIntConstImpl(eObject.eContents().get(0));	
-		} else if (eObject.eContents().get(0).getClass()
-				.getSimpleName().equals("StrConstImpl")) {
-			return compileStrConstImpl(eObject.eContents().get(0));
+	private static String compilePostfixExpressionImpl(EObject obj) {
+		String codigo = "";
+		for (EObject e : obj.eContents()) {
+			String className = e.getClass().getSimpleName();
+			if (className.equals("IntConstImpl")) {
+				codigo += compileIntConstImpl(e);
+			} else if (className.equals("StrConstImpl")) {
+				codigo += compileStrConstImpl(e);	
+			}
 		}
-		return "PostfixExp " + eObject.eContents().get(0).getClass();
+		return (!codigo.isEmpty() ? codigo : "PostfixExpressionImpl" + obj.eContents());
 	}
 	
 	private static String compileIntConstImpl(EObject eObject) {
@@ -116,5 +121,18 @@ public class CompilerSupport {
 		String r = original.split(toParser + ": ")[1];
 		int end = r.indexOf(")");
 		return r.substring(0, end);
+	}
+	
+	private static String generalCompile (EObject obj) {
+		switch (obj.getClass().getSimpleName()) {
+			case "DeclaratorImpl":
+				
+				break;
+			default:
+				return  "Pai: " + obj.eContainer().getClass().getSimpleName() + " " + 
+						"Classe: " + obj.getClass().getSimpleName();
+			
+		}
+		return "";
 	}
 }
