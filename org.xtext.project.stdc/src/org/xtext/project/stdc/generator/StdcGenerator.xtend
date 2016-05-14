@@ -7,20 +7,7 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import org.xtext.project.stdc.stdc.ExpressionC
-import org.xtext.project.stdc.stdc.AssignmentExpression
-import org.xtext.project.stdc.stdc.ConstantExpression
-import org.xtext.project.stdc.services.StdcGrammarAccess.PrimaryExpressionElements
-import org.xtext.project.stdc.stdc.ForLoop
-import org.xtext.project.stdc.stdc.IfStatement
-import org.xtext.project.stdc.stdc.WhileLoop
-import org.xtext.project.stdc.stdc.DoWhileLoop
-import org.xtext.project.stdc.stdc.initializer
-import org.xtext.project.stdc.stdc.PostfixExpression
-import org.xtext.project.stdc.stdc.impl.IntConstImpl
-import org.xtext.project.stdc.stdc.Declaration
-import org.xtext.project.stdc.stdc.impl.TypeSpecifierImpl
-import org.xtext.project.stdc.stdc.impl.DeclaratorImpl
+import utils.CompilerSupport
 
 /**
  * Generates code from your model files on save.
@@ -30,67 +17,8 @@ import org.xtext.project.stdc.stdc.impl.DeclaratorImpl
 class StdcGenerator extends AbstractGenerator {
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-		var str = ''
-		for (e : resource.allContents.toIterable.filter(Declaration)) {
-			
-			str = str + compile(e) + "\n"
-		}
-		fsa.generateFile('greetings.txt', str)
+		CompilerSupport.registerCount = 0;
+		fsa.generateFile('assembly.txt', CompilerSupport.compileFile(resource.contents))
 	}
-	
-	def compile(Declaration i) {
-		return i.eContents.filter(DeclaratorImpl).join() + "\n" + 
-			i.eContents.filter(DeclaratorImpl).get(0) + "\n" 
-		//return i.eContents.filter(DeclaratorImpl).join()
-	}
-	
-	def compile(initializer i) {
-		return 'inicializador'
-	} 
-	
-	def compile(IfStatement i) {
-		return 'if'
-	}
-	
-	def compile(ForLoop f) {
-		return 'for'
-	}
-	
-	def compile(PrimaryExpressionElements p) {
-		return 'primary expression'
-	}
-	
-	def compile(ConstantExpression c) {
-		return 'constant'
-	}
-	
-	def compile(AssignmentExpression a) {
-		return 'assigment'
-	}
-	
-	def compile(WhileLoop w) {
-		return 'while'
-	}
-	
-	def compile(DoWhileLoop d) {
-		return 'dowhile'
-	}
-	
-	def compile(PostfixExpression p) {
-		return p.eAllContents.join()
-	}
-	
-	def compile(ExpressionC e) {
-		return e.eAllContents.filter(typeof(IntConstImpl)).map[intC]
-		//eResource.resourceSet.resources.get(0)
-		//val c = e.eContainer
-		//val f = e.eContainingFeature	
-		//if(c instanceof AssignmentExpression) {
-		//	if (f instanceof AssignmentExpression) {
-		//		return c.compile + f.compile
-		//	}
-		//}
-	}
-        
-        
+	       
 }
