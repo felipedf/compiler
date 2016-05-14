@@ -18,6 +18,7 @@ class StdcGenerator extends AbstractGenerator {
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		CompilerSupport.registerCount = 0;
+		CompilerSupport.loopCount = 0;
 		fsa.generateFile('assembly.txt', CompilerSupport.compileFile(resource.contents))
 	}
 	       

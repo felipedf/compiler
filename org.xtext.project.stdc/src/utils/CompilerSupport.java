@@ -1,8 +1,6 @@
 package utils;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -11,8 +9,9 @@ import com.google.common.base.Splitter;
 
 public class CompilerSupport {
 	
+	public static int memoryPosition = 100;
 	public static int registerCount = -1;
-	public static Queue<String> regsFila = new LinkedList<String>();
+	public static int loopCount = 0;
 	public static HashMap<String, String> mapFuncReturn = new HashMap<String, String>();
 	
 	private static String getCodeFromContents(EObject obj) {
@@ -20,20 +19,21 @@ public class CompilerSupport {
 		for (EObject e : obj.eContents()) {
 			codigo += generalCompile(e);
 		}
-		String codigoTabulado = "";
-		if (obj.getClass().getSimpleName().equals("FunctionDefinitionImpl")) {
-			Splitter splitter = Splitter.on("\n")
-			                    .omitEmptyStrings();
-			int i = 0;
-			for (String line : splitter.split(codigo)){
-				if (i != 0)
-					codigoTabulado += "  ";
-				codigoTabulado += line + "\n";
-				i++;
-			}
-			return codigoTabulado;
+		String classe = obj.getClass().getSimpleName(); 
+		if (classe.equals("DoWhileLoopImpl")) {
+			codigo = tabCode(codigo);
 		}
-		return codigo;
+		return codigo; 
+				//+ "ME: " + classe + " " + "Pai: " + obj.eContainer().getClass().getSimpleName() + "\n";
+	}
+	
+	private static String tabCode(String code) {
+		String codigoTabulado = "";
+		Splitter splitter = Splitter.on("\n").omitEmptyStrings();
+		for (String line : splitter.split(code)){
+			codigoTabulado += "  " + line + "\n";
+		}
+		return codigoTabulado;
 	}
 	
 	public static String compileFile(EList<EObject> list) {
@@ -58,42 +58,57 @@ public class CompilerSupport {
 	}
 	
 	private static String compileAddExpImpl(EObject obj) {
-		regsFila.clear();
 		String codigo = getCodeFromContents(obj);
 		registerCount++;
-		codigo += "ADD " + "R" + registerCount + ", " + regsFila.remove() 
-				+ ", " + regsFila.remove() + "\n";
+		codigo += "ADD " + "R" + registerCount + ", " + 
+				"R" + (registerCount - 1) + ", " + 
+				"R" + (registerCount - 2) + "\n";
 		return codigo;
 	}
 	
 	private static String compileMulExpImpl(EObject obj) {
-		regsFila.clear();
 		String codigo = getCodeFromContents(obj);
 		registerCount++;
-		codigo += "MUL " + "R" + registerCount + ", " + regsFila.remove() 
-				+ ", " + regsFila.remove() + "\n";
+		codigo += "MUL " + "R" + registerCount + ", " + 
+				"R" + (registerCount - 1) + ", " + 
+				"R" + (registerCount - 2) + "\n";
 		return codigo;
 	}
 	
 	private static String compileRelExpImpl(EObject obj) {
-		regsFila.clear();
 		String codigo = getCodeFromContents(obj);
 		registerCount++;
-		codigo += "SUB " + "R" + registerCount + ", " + regsFila.remove() 
-				+ ", " + regsFila.remove() + "\n";
+		codigo += "SUB " + "R" + registerCount + ", " + 
+				"R" + (registerCount - 1) + ", " + 
+				"R" + (registerCount - 2) + "\n";
+		if (obj.eContainer().getClass().getSimpleName().equals("DoWhileLoopImpl")) {
+			codigo += "BLTZ R" + registerCount + ", L" + loopCount + "\n";	
+		}
 		return codigo;
 	}
 	
 	private static String compileDoWhileLoopImpl(EObject obj) {
-		return getCodeFromContents(obj);
+		String codigo = "BNEZ #1, L" + loopCount + "\n";
+		codigo +=  "L" + loopCount + ": \n"; 
+		codigo += getCodeFromContents(obj);
+		loopCount++;
+		return codigo;
 	}
 	
 	private static String compileEqualExpImpl(EObject obj) {
-		return compileRelExpImpl(obj); // 3 == 3 gera o mesmo codigo de 3 < 3
+		String codigo = compileRelExpImpl(obj) ;
+		if (obj.eContainer().getClass().getSimpleName().equals("DoWhileLoopImpl")) {
+			codigo += "BEZ R" + registerCount + ", L" + loopCount + "\n";	
+		}
+		return codigo; // 3 == 3 gera o mesmo codigo de 3 < 3
 	}
 	
 	private static String compileExpressionCImpl(EObject obj) {
-		return getCodeFromContents(obj);
+		String codigo = getCodeFromContents(obj);
+		if (obj.eContainer().getClass().getSimpleName().equals("DoWhileLoopImpl")) {
+			codigo += "BNEZ " + "R" + registerCount + ", L" + loopCount + "\n";
+		}
+		return codigo;
 	}
 	
 	private static String compilePostfixExpressionImpl(EObject obj) {
@@ -101,7 +116,7 @@ public class CompilerSupport {
 	}
 	
 	private static String compileCompoundStatementImpl(EObject obj) {
-		return getCodeFromContents(obj);
+		return tabCode(getCodeFromContents(obj));
 	}
 	
 	private static String compileJumpStatementImpl(EObject obj) {
@@ -115,8 +130,12 @@ public class CompilerSupport {
 	private static String compileIdentifierImpl(EObject obj) {
 		registerCount++;
 		String reg = "R" + registerCount;
-		regsFila.add(reg);
 		String value = parser(obj.toString(), "name");
+		if (value == "false") {
+			value = "#0";
+		} else {
+			value = "#1";
+		}
 		return "LD " + reg + ", " + value + "\n";	
 	}
 	
@@ -125,7 +144,10 @@ public class CompilerSupport {
 		String id = parser(obj.toString(), "name");
 		if (!obj.eContents().isEmpty()) { // significa que é a declaração de uma função
 			codigo += id + ": \n";
-		} else {
+		} else if (obj.eContainer().eContents().size() == 1) { // declaração sem atribuição
+			codigo += "ST " + id + ", " + memoryPosition + "\n";
+			memoryPosition += 20;
+		} else { //declaração com atribuição
 			String reg = "R" + registerCount;
 			codigo += "ST " + id + ", " + reg + "\n";
 		}		
@@ -135,7 +157,6 @@ public class CompilerSupport {
 	private static String compileIntConstImpl(EObject obj) {
 		registerCount++;
 		String reg = "R" + registerCount;
-		regsFila.add(reg);
 		String value = "#" + parser(obj.toString(), "intC");
 		return "LD " + reg + ", " + value + "\n";	
 	}
@@ -143,7 +164,6 @@ public class CompilerSupport {
 	private static String compileFloatConstImpl(EObject obj) {
 		registerCount++;
 		String reg = "R" + registerCount;
-		regsFila.add(reg);
 		String value = "#" + parser(obj.toString(), "floatC");
 		return "LD " + reg + ", " + value + "\n";	
 	}
@@ -151,7 +171,6 @@ public class CompilerSupport {
 	private static String compileStrConstImpl(EObject obj) {
 		registerCount++;
 		String reg = "R" + registerCount;
-		regsFila.add(reg);
 		String value = "'" + parser(obj.toString(), "str") + "'";
 		return "LD " + reg + ", " + value + "\n";
 	}
@@ -170,12 +189,20 @@ public class CompilerSupport {
 				return compileInitializerImpl(obj);
 			case "ExpressionCImpl":
 				return compileExpressionCImpl(obj);
+			case "ParameterDeclarationListImpl":
+				return getCodeFromContents(obj);
+			case "ArgumentExpImpl":
+				return getCodeFromContents(obj);
 			case "DirectDeclaratorImpl":
 				return compileDirectDeclaratorImpl(obj);
 			case "DirectDecl2Impl":
-				return "";
+				return getCodeFromContents(obj);
+			case "DeclarationAbstractImpl":
+				return getCodeFromContents(obj);
 			case "CompoundStatementImpl":
 				return compileCompoundStatementImpl(obj);
+			case "PostfixExpression2Impl":
+				return getCodeFromContents(obj);
 			case "IdentifierImpl":
 				return compileIdentifierImpl(obj);
 			case "FloatConstImpl":
