@@ -50,7 +50,7 @@ class StdcValidator extends AbstractStdcValidator {
 		var typeR = returnExp.typeActual
 		var ok = true
 		if(typeF == 'void' && (typeR != null || typeR != 'void')) ok = false
-		else if(typeF == 'char' && typeR != 'char*') ok = false
+		//else if(typeF == 'char*' && typeR != 'char*') ok = false
 		else if(typeF != 'char' && typeR == 'char*') ok = false
 		if(!ok) {
 			error("The return type is incompatible Expected'"+typeF+
@@ -118,16 +118,17 @@ class StdcValidator extends AbstractStdcValidator {
 		val f = e.eContainingFeature
 		if(c instanceof AssignmentExpression) {
 			if(f == StdcPackage::eINSTANCE.getAssignmentExpression_Right) {
-				val rightExp=e.expectedType
+				val leftExp=e.expectedType
+				println("EXPPPPPPPPP "+leftExp)
 				//Verifica se a assignment expression eh atribuida a um ID
-				if(!(rightExp instanceof Identifier)) {
+				if(!(leftExp instanceof Identifier)) {
 					error('Invalid Assignment',StdcPackage.Literals.EXPRESSION_C__POST_EXP,
 				INVALID_NAME)
 				}
-				else if(rightExp instanceof Identifier) {
+				else if(leftExp instanceof Identifier) {
 					val previousDecl = e.containingMethod.body.
 						getAllContentsOfType(typeof(DirectDeclarator)).findFirst[
-							it.name == rightExp.name]
+							it.name == leftExp.name]
 					if(previousDecl == null) {
 						error('Variable was not previously declared',StdcPackage.Literals.EXPRESSION_C__POST_EXP,
 							INVALID_NAME)

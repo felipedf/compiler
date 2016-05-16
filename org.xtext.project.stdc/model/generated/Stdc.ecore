@@ -77,12 +77,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="funcSpec" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InitDeclaratorList"/>
-  <eClassifiers xsi:type="ecore:EClass" name="InitDeclarator" eSuperTypes="#//InitDeclaratorList">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="declarator" eType="#//Declarator"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="init" eType="#//initializer"
-        containment="true"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InitDeclarator" eSuperTypes="#//InitDeclaratorList"/>
   <eClassifiers xsi:type="ecore:EClass" name="TypeSpecifier" eSuperTypes="#//DeclarationSpecifier">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="atomicType" eType="#//AtomicTypeSpecifier"
@@ -109,8 +104,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="Enumerator" eSuperTypes="#//EnumeratorList"/>
   <eClassifiers xsi:type="ecore:EClass" name="AtomicTypeSpecifier"/>
   <eClassifiers xsi:type="ecore:EClass" name="AlignmentSpecifier" eSuperTypes="#//DeclarationSpecifier"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Declarator">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="point" eType="#//Pointer"
+  <eClassifiers xsi:type="ecore:EClass" name="Declarator" eSuperTypes="#//InitDeclarator">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="init" eType="#//initializer"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="directDecl" eType="#//DirectDeclarator"
         containment="true"/>
@@ -122,7 +117,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="declarator2" upperBound="-1"
         eType="#//DirectDeclarator" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Pointer"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Pointer" eSuperTypes="#//Declarator"/>
   <eClassifiers xsi:type="ecore:EClass" name="TypeQualifierList">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="typeQualList" unique="false"
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -272,6 +267,9 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="argumentExpList" upperBound="-1"
         eType="#//ArgumentExpressionList" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CharConst" eSuperTypes="#//ExpressionC">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="ch" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StrConst" eSuperTypes="#//ExpressionC">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="str" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>

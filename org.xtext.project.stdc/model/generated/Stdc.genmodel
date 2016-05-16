@@ -62,10 +62,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//DeclarationSpecifier/funcSpec"/>
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//InitDeclaratorList"/>
-    <genClasses ecoreClass="Stdc.ecore#//InitDeclarator">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//InitDeclarator/declarator"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//InitDeclarator/init"/>
-    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//InitDeclarator"/>
     <genClasses ecoreClass="Stdc.ecore#//TypeSpecifier">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//TypeSpecifier/type"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//TypeSpecifier/atomicType"/>
@@ -88,7 +85,7 @@
     <genClasses ecoreClass="Stdc.ecore#//AtomicTypeSpecifier"/>
     <genClasses ecoreClass="Stdc.ecore#//AlignmentSpecifier"/>
     <genClasses ecoreClass="Stdc.ecore#//Declarator">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//Declarator/point"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//Declarator/init"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//Declarator/directDecl"/>
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//DirectDeclarator">
@@ -202,6 +199,9 @@
     <genClasses ecoreClass="Stdc.ecore#//PostfixExpression2">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//PostfixExpression2/exppost"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//PostfixExpression2/argumentExpList"/>
+    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//CharConst">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//CharConst/ch"/>
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//StrConst">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//StrConst/str"/>

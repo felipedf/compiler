@@ -9,7 +9,6 @@ TranslationUnit
 	: exDeclaration+=ExternalDeclaration*
 	;
 
-//declaração de variaveis e funcoes e afins
 ExternalDeclaration
 	: 
 	(=>FunctionDefinition
@@ -34,8 +33,7 @@ ExpressionC returns ExpressionC
 	;
 	
 AssignmentExpression returns ExpressionC
-	: //{AssignExp} (=>left+=unary_expression OpAssign)* =>right+=conditional_expression
-		ConditionalExpression  ({AssignmentExpression.left=current} OpAssign right=ConditionalExpression)?
+	:	ConditionalExpression  ({AssignmentExpression.left=current} OpAssign right=ConditionalExpression)?
 	;
 
 OpAssign:
@@ -109,18 +107,12 @@ OpAdd:
 ;
 
 MultiplicativeExpression returns ExpressionC
-	: //cast_expression (=>({MultExp.left=current} OpMult) right=cast_expression)*
-		UnaryExpression (=>({MultExp.left=current} OpMult) right=UnaryExpression)*
+	: UnaryExpression (=>({MultExp.left=current} OpMult) right=UnaryExpression)*
 	;
 
 OpMult:
 	'*' | '/' | '%'
 ;
-
-
-//cast_expression returns expression
-//	: cast+=cast_rule* =>unaryExp+=unary_expression
-//	;
 
 UnaryExpression returns ExpressionC
 	: postExp=PostfixExpression
@@ -130,11 +122,6 @@ UnaryExpression returns ExpressionC
 		|OpInc
 		|'_Alignof'
 	) unExp=UnaryExpression
-	//| OpInc unExp=UnaryExpression
-	//| OpUnary castExp=UnaryExpression
-	//| 'sizeof' unExp=UnaryExpression
-	//| cast=CastRule unExp=UnaryExpression
-	//| '_Alignof' c=UnaryExpression
 	;
 
 CastRule:
@@ -175,7 +162,8 @@ PostfixType:
 ;
 
 PrimaryExpression returns ExpressionC
-	: {StrConst} str=STRING
+	: {CharConst} ch=CHAR
+	| {StrConst} str=STRING
 	| Constant
 	| {Identifier} name=ID
 	| '(' ExpressionC ')'
@@ -189,19 +177,11 @@ ArgumentExpressionList
 Constant
 	: {IntConst} intC=I_CONSTANT		/* includes character_constant */
 	| {FloatConst} floatC=F_CONSTANT
-	//| ??? ENUMERATION_CONSTANT ??	/* after it has been defined as such */
 	;
 
 EnumerationConstant		/* before it has been defined as such */
 	: _ID=ID
 	;
-
-//TODO que merda eh essa?
-/*string
-	: STRING_LITERAL
-	| FUNC_NAME
-	; */
-
 
 GenericSelection
 	: '_Generic' '(' exp=AssignmentExpression ',' genericAssocList=GenericAssocList ')'
@@ -257,7 +237,6 @@ TypeSpecifier
 	| structSpec=StructOrUnionSpecifier
 	|  enumSpec=EnumSpecifier
 	)
-	//| ???? TYPEDEF_NAME ????		/* after it has been defined as such */
 	;
 Types:
 	'void'
@@ -594,3 +573,9 @@ terminal F_CONSTANT
 	| HP H* '.' H+ P FS?
 	| HP H+ '.' P FS?
 	;
+	
+terminal CHAR: 
+			'"' (!('\\'|'"') ) '"' |
+			"'" (!('\\'|"'") ) "'"
+			;	
+	

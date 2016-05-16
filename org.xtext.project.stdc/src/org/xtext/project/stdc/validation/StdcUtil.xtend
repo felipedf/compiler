@@ -27,6 +27,7 @@ import org.xtext.project.stdc.stdc.TranslationUnit
 import org.xtext.project.stdc.stdc.TypeSpecifier
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import org.xtext.project.stdc.stdc.CharConst
 
 class StdcUtil {
 	val static ep = StdcPackage::eINSTANCE;
@@ -108,6 +109,7 @@ class StdcUtil {
 	}	
 	def static typeActual(ExpressionC e) {
 		switch (e) {
+			CharConst: 'char'
 			StrConst: 'char*'
 			IntConst: 'int'
 			FloatConst: 'float'

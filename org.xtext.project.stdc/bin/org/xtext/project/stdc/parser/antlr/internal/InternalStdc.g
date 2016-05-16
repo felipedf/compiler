@@ -2082,15 +2082,43 @@ rulePrimaryExpression returns [EObject current=null]
 			(
 				{
 					$current = forceCreateModelElement(
-						grammarAccess.getPrimaryExpressionAccess().getStrConstAction_0_0(),
+						grammarAccess.getPrimaryExpressionAccess().getCharConstAction_0_0(),
 						$current);
 				}
 			)
 			(
 				(
-					lv_str_1_0=RULE_STRING
+					lv_ch_1_0=RULE_CHAR
 					{
-						newLeafNode(lv_str_1_0, grammarAccess.getPrimaryExpressionAccess().getStrSTRINGTerminalRuleCall_0_1_0());
+						newLeafNode(lv_ch_1_0, grammarAccess.getPrimaryExpressionAccess().getChCHARTerminalRuleCall_0_1_0());
+					}
+					{
+						if ($current==null) {
+							$current = createModelElement(grammarAccess.getPrimaryExpressionRule());
+						}
+						setWithLastConsumed(
+							$current,
+							"ch",
+							lv_ch_1_0,
+							"org.xtext.project.stdc.Stdc.CHAR");
+					}
+				)
+			)
+		)
+		    |
+		(
+			(
+				{
+					$current = forceCreateModelElement(
+						grammarAccess.getPrimaryExpressionAccess().getStrConstAction_1_0(),
+						$current);
+				}
+			)
+			(
+				(
+					lv_str_3_0=RULE_STRING
+					{
+						newLeafNode(lv_str_3_0, grammarAccess.getPrimaryExpressionAccess().getStrSTRINGTerminalRuleCall_1_1_0());
 					}
 					{
 						if ($current==null) {
@@ -2099,7 +2127,7 @@ rulePrimaryExpression returns [EObject current=null]
 						setWithLastConsumed(
 							$current,
 							"str",
-							lv_str_1_0,
+							lv_str_3_0,
 							"org.eclipse.xtext.common.Terminals.STRING");
 					}
 				)
@@ -2107,11 +2135,11 @@ rulePrimaryExpression returns [EObject current=null]
 		)
 		    |
 		{
-			newCompositeNode(grammarAccess.getPrimaryExpressionAccess().getConstantParserRuleCall_1());
+			newCompositeNode(grammarAccess.getPrimaryExpressionAccess().getConstantParserRuleCall_2());
 		}
-		this_Constant_2=ruleConstant
+		this_Constant_4=ruleConstant
 		{
-			$current = $this_Constant_2.current;
+			$current = $this_Constant_4.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -2119,15 +2147,15 @@ rulePrimaryExpression returns [EObject current=null]
 			(
 				{
 					$current = forceCreateModelElement(
-						grammarAccess.getPrimaryExpressionAccess().getIdentifierAction_2_0(),
+						grammarAccess.getPrimaryExpressionAccess().getIdentifierAction_3_0(),
 						$current);
 				}
 			)
 			(
 				(
-					lv_name_4_0=RULE_ID
+					lv_name_6_0=RULE_ID
 					{
-						newLeafNode(lv_name_4_0, grammarAccess.getPrimaryExpressionAccess().getNameIDTerminalRuleCall_2_1_0());
+						newLeafNode(lv_name_6_0, grammarAccess.getPrimaryExpressionAccess().getNameIDTerminalRuleCall_3_1_0());
 					}
 					{
 						if ($current==null) {
@@ -2136,7 +2164,7 @@ rulePrimaryExpression returns [EObject current=null]
 						setWithLastConsumed(
 							$current,
 							"name",
-							lv_name_4_0,
+							lv_name_6_0,
 							"org.eclipse.xtext.common.Terminals.ID");
 					}
 				)
@@ -2144,30 +2172,30 @@ rulePrimaryExpression returns [EObject current=null]
 		)
 		    |
 		(
-			otherlv_5='('
+			otherlv_7='('
 			{
-				newLeafNode(otherlv_5, grammarAccess.getPrimaryExpressionAccess().getLeftParenthesisKeyword_3_0());
+				newLeafNode(otherlv_7, grammarAccess.getPrimaryExpressionAccess().getLeftParenthesisKeyword_4_0());
 			}
 			{
-				newCompositeNode(grammarAccess.getPrimaryExpressionAccess().getExpressionCParserRuleCall_3_1());
+				newCompositeNode(grammarAccess.getPrimaryExpressionAccess().getExpressionCParserRuleCall_4_1());
 			}
-			this_ExpressionC_6=ruleExpressionC
+			this_ExpressionC_8=ruleExpressionC
 			{
-				$current = $this_ExpressionC_6.current;
+				$current = $this_ExpressionC_8.current;
 				afterParserOrEnumRuleCall();
 			}
-			otherlv_7=')'
+			otherlv_9=')'
 			{
-				newLeafNode(otherlv_7, grammarAccess.getPrimaryExpressionAccess().getRightParenthesisKeyword_3_2());
+				newLeafNode(otherlv_9, grammarAccess.getPrimaryExpressionAccess().getRightParenthesisKeyword_4_2());
 			}
 		)
 		    |
 		{
-			newCompositeNode(grammarAccess.getPrimaryExpressionAccess().getGenericSelectionParserRuleCall_4());
+			newCompositeNode(grammarAccess.getPrimaryExpressionAccess().getGenericSelectionParserRuleCall_5());
 		}
-		this_GenericSelection_8=ruleGenericSelection
+		this_GenericSelection_10=ruleGenericSelection
 		{
-			$current = $this_GenericSelection_8.current;
+			$current = $this_GenericSelection_10.current;
 			afterParserOrEnumRuleCall();
 		}
 	)
@@ -2826,25 +2854,14 @@ ruleInitDeclarator returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getInitDeclaratorAccess().getDeclaratorDeclaratorParserRuleCall_0_0());
-				}
-				lv_declarator_0_0=ruleDeclarator
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getInitDeclaratorRule());
-					}
-					set(
-						$current,
-						"declarator",
-						lv_declarator_0_0,
-						"org.xtext.project.stdc.Stdc.Declarator");
-					afterParserOrEnumRuleCall();
-				}
-			)
-		)
+		{
+			newCompositeNode(grammarAccess.getInitDeclaratorAccess().getDeclaratorParserRuleCall_0());
+		}
+		this_Declarator_0=ruleDeclarator
+		{
+			$current = $this_Declarator_0.current;
+			afterParserOrEnumRuleCall();
+		}
 		(
 			otherlv_1='='
 			{
@@ -4086,23 +4103,14 @@ ruleDeclarator returns [EObject current=null]
 }:
 	(
 		(
-			(
-				{
-					newCompositeNode(grammarAccess.getDeclaratorAccess().getPointPointerParserRuleCall_0_0());
-				}
-				lv_point_0_0=rulePointer
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getDeclaratorRule());
-					}
-					set(
-						$current,
-						"point",
-						lv_point_0_0,
-						"org.xtext.project.stdc.Stdc.Pointer");
-					afterParserOrEnumRuleCall();
-				}
-			)
+			{
+				newCompositeNode(grammarAccess.getDeclaratorAccess().getPointerParserRuleCall_0());
+			}
+			this_Pointer_0=rulePointer
+			{
+				$current = $this_Pointer_0.current;
+				afterParserOrEnumRuleCall();
+			}
 		)?
 		(
 			(
@@ -6945,6 +6953,8 @@ fragment RULE_FS : ('f'|'F'|'l'|'L');
 RULE_I_CONSTANT : (RULE_HP ('a'..'f'|'A'..'F'|'0'..'9')+ RULE_IS?|RULE_NZ RULE_INT? RULE_IS?|'0' RULE_INT? RULE_IS?|('u'|'U'|'L')? '\'' ('^'|'\''|'\\'|'\n')+ '\'');
 
 RULE_F_CONSTANT : (RULE_HP RULE_H+ RULE_IS?|RULE_INT? '.' RULE_INT RULE_E? RULE_FS?|RULE_INT '.' RULE_E? RULE_FS?|RULE_HP RULE_H+ RULE_P RULE_FS?|RULE_HP RULE_H* '.' RULE_H+ RULE_P RULE_FS?|RULE_HP RULE_H+ '.' RULE_P RULE_FS?);
+
+RULE_CHAR : ('"' ~(('\\'|'"')) '"'|'\'' ~(('\\'|'\'')) '\'');
 
 RULE_ID : '^'? ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
 
