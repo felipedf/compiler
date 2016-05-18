@@ -4,8 +4,10 @@ import org.eclipse.emf.ecore.EObject
 import org.xtext.project.stdc.stdc.AddExp
 import org.xtext.project.stdc.stdc.AndExp
 import org.xtext.project.stdc.stdc.AssignmentExpression
-import org.xtext.project.stdc.stdc.CReturn
+import org.xtext.project.stdc.stdc.CharConst
 import org.xtext.project.stdc.stdc.DeclarationInitDeclaratorList
+import org.xtext.project.stdc.stdc.Declarator
+import org.xtext.project.stdc.stdc.DirectDeclarator
 import org.xtext.project.stdc.stdc.EqualExp
 import org.xtext.project.stdc.stdc.ExclusiveOr
 import org.xtext.project.stdc.stdc.ExpressionC
@@ -13,6 +15,7 @@ import org.xtext.project.stdc.stdc.FloatConst
 import org.xtext.project.stdc.stdc.FunctionDefinition
 import org.xtext.project.stdc.stdc.Identifier
 import org.xtext.project.stdc.stdc.InclusiveOr
+import org.xtext.project.stdc.stdc.InitDeclaList
 import org.xtext.project.stdc.stdc.IntConst
 import org.xtext.project.stdc.stdc.JumpStatement
 import org.xtext.project.stdc.stdc.LogicOr
@@ -27,7 +30,6 @@ import org.xtext.project.stdc.stdc.TranslationUnit
 import org.xtext.project.stdc.stdc.TypeSpecifier
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import org.xtext.project.stdc.stdc.CharConst
 
 class StdcUtil {
 	val static ep = StdcPackage::eINSTANCE;
@@ -41,7 +43,41 @@ class StdcUtil {
 	}
 	
 	def static idType(Identifier id) {
-		//TODO
+		val previousDecl = id.containingMethod.body.
+			getAllContentsOfType(typeof(DirectDeclarator)).findFirst[
+			it.name == id.name]
+		if(previousDecl != null)  {
+			var type = previousDecl.containingDeclaration.declarationSpec.
+								filter(typeof(TypeSpecifier)).map[type].head
+			val hasPointer = previousDecl.containingDeclarator.point
+			if(hasPointer !=null) type = type+'*';
+			return type
+		}
+		else {
+			var p1 = id.containingClass.exDeclaration.filter(
+				typeof(DeclarationInitDeclaratorList)
+			)
+			var previousDeclGlobal = p1.findFirst[
+						if(it.declaratorList.iniDec!=null){	
+							it.declaratorList.iniDec.dec.directDecl.name == id.name
+						}
+						else {
+							(it.declaratorList as InitDeclaList).getAllContentsOfType(typeof(DirectDeclarator)).findFirst[
+								it.name == id.name]?.name == id.name
+						}
+					]
+			if(previousDeclGlobal != null) {
+				var type = previousDeclGlobal.declarationSpec.filter(
+							typeof(TypeSpecifier)
+						).map[type].head
+				val hasPointer = previousDeclGlobal.getAllContentsOfType(typeof(Declarator)).findFirst[
+					it.directDecl.name == id.name
+				].point
+				if(hasPointer !=null) type = type+'*';
+				return type;
+			}
+		}
+		return null
 	}
 	
 ///////////////////
@@ -56,6 +92,10 @@ class StdcUtil {
 	def static containingDeclaration(EObject e) {
 		e.getContainerOfType(typeof(DeclarationInitDeclaratorList))
 	}
+	
+	def static containingDeclarator(EObject e) {
+		e.getContainerOfType(typeof(Declarator))
+	}
 //////////////////////////
 
 	def static expectedType(ExpressionC e) {
@@ -63,48 +103,62 @@ class StdcUtil {
 		val f = e.eContainingFeature
 		switch (c) {
 			AssignmentExpression case f == ep.getAssignmentExpression_Right : {
-				var posexp = c.left.postExp
-				if(posexp != null) { 
-					if( posexp instanceof PostfixExpression) {
-						posexp = (posexp as PostfixExpression).primaryExp
-					}
-				}
-				posexp
+				c.left.findType
 			}
 			LogicOr case f == ep.getLogicOr_Right : {
-				cmpExp(c.left.postExp, c.right.postExp)
+				val type = c.left.findType
+				if(type == 'char*') return 'error';
+				return type
 			}
 			LogicalExp case f == ep.getLogicalExp_Right : {
-				cmpExp(c.left.postExp, c.right.postExp)
+				val type = c.left.findType
+				if(type == 'char*') return 'error';
+				return type
 			}
 			InclusiveOr case f == ep.getInclusiveOr_Right : {
-				cmpExp(c.left.postExp, c.right.postExp)
+				val type = c.left.findType
+				if(type == 'char*') return 'error';
+				return type
 			}
 			ExclusiveOr case f == ep.getExclusiveOr_Right : {
-				cmpExp(c.left.postExp, c.right.postExp)
+				val type = c.left.findType
+				if(type == 'char*') return 'error';
+				return type
 			}
 			AndExp case f == ep.getAndExp_Right : {
-				cmpExp(c.left.postExp, c.right.postExp)
+				val type = c.left.findType
+				if(type == 'char*') return 'error';
+				return type
 			}
 			EqualExp case f == ep.getEqualExp_Right : {
-				cmpExp(c.left.postExp, c.right.postExp)
+				val type = c.left.findType
+				if(type == 'char*') return 'error';
+				return type
 			}
 			RelExp case f == ep.getRelExp_Right : {
-				cmpExp(c.left.postExp, c.right.postExp)
+				val type = c.left.findType
+				if(type == 'char*') return 'error';
+				return type
 			}
 			ShiftExp case f == ep.getShiftExp_Right : {
-				cmpExp(c.left.postExp, c.right.postExp)
+				val type = c.left.findType
+				if(type == 'char*') return 'error';
+				return type
 			}
 			AddExp case f == ep.getAddExp_Right : {
-				cmpExp(c.left.postExp, c.right.postExp)
+				val type = c.left.findType
+				if(type == 'char*') return 'error';
+				return type
 			}
 			MultExp case f == ep.getMultExp_Right : {
-				cmpExp(c.left.postExp, c.right.postExp)
+				val type = c.left.findType
+				if(type == 'char*') return 'error';
+				return type
 			}
-			
-			CReturn case f == ep.CReturn_ExpR : {
-				c.containingMethod.declarationSpec.filter(typeof(TypeSpecifier)).head.type
-			}
+//			
+//			CReturn case f == ep.CReturn_ExpR : {
+//				c.containingMethod.declarationSpec.filter(typeof(TypeSpecifier)).head.type
+//			}
 		}
 	}	
 	def static typeActual(ExpressionC e) {
@@ -113,25 +167,22 @@ class StdcUtil {
 			StrConst: 'char*'
 			IntConst: 'int'
 			FloatConst: 'float'
+			Identifier: e.idType
+			default: 'int'
 		}
 	}
-	def static cmpExp(ExpressionC left, ExpressionC right) {
-		var left2 = left
-		if(left2 != null) { 
-			if( left2 instanceof PostfixExpression) {
-				left2 = (left2 as PostfixExpression).primaryExp
+	
+	def static findType(ExpressionC left) {
+		left.findPrimaryExp.typeActual
+	}
+	
+	def static findPrimaryExp(ExpressionC exp) {
+		var exp2 = exp
+		if(exp2.postExp != null) {
+			if( exp2.postExp instanceof PostfixExpression) {
+				exp2 = (exp2.postExp as PostfixExpression).primaryExp
 			}
-			if(left2.typeActual=='char*') return false;
 		}
-		var right2 = right
-		if(right2 != null) { 
-			if( right2 instanceof PostfixExpression) {
-				right2 = (right2 as PostfixExpression).primaryExp
-			}
-			if(right2.typeActual=='char*') return false;
-		}
-		
-		if(left==null||right==null) return true;
-		return(left2.typeActual!=null && right2.typeActual!=null)
+		return exp2
 	}
 }

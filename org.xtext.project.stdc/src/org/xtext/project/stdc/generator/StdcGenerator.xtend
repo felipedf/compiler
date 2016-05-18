@@ -7,6 +7,7 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import utils.CompilerSupport
 
 /**
  * Generates code from your model files on save.
@@ -16,10 +17,9 @@ import org.eclipse.xtext.generator.IGeneratorContext
 class StdcGenerator extends AbstractGenerator {
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-//		fsa.generateFile('greetings.txt', 'People to greet: ' + 
-//			resource.allContents
-//				.filter(typeof(Greeting))
-//				.map[name]
-//				.join(', '))
+		CompilerSupport.registerCount = 0;
+		CompilerSupport.loopCount = 0;
+		fsa.generateFile('assembly.txt', CompilerSupport.compileFile(resource.contents))
 	}
+	       
 }

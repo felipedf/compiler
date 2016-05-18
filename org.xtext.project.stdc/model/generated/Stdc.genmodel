@@ -61,8 +61,13 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//DeclarationSpecifier/storeClass"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//DeclarationSpecifier/funcSpec"/>
     </genClasses>
-    <genClasses ecoreClass="Stdc.ecore#//InitDeclaratorList"/>
-    <genClasses ecoreClass="Stdc.ecore#//InitDeclarator"/>
+    <genClasses ecoreClass="Stdc.ecore#//InitDeclaratorList">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//InitDeclaratorList/iniDec"/>
+    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//InitDeclarator">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//InitDeclarator/dec"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//InitDeclarator/init"/>
+    </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//TypeSpecifier">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//TypeSpecifier/type"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//TypeSpecifier/atomicType"/>
@@ -85,7 +90,7 @@
     <genClasses ecoreClass="Stdc.ecore#//AtomicTypeSpecifier"/>
     <genClasses ecoreClass="Stdc.ecore#//AlignmentSpecifier"/>
     <genClasses ecoreClass="Stdc.ecore#//Declarator">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//Declarator/init"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//Declarator/point"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//Declarator/directDecl"/>
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//DirectDeclarator">
@@ -106,8 +111,8 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//DirectAbstractDeclarator/direct_declarator2"/>
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//DirectAbstractDeclarator2"/>
-    <genClasses ecoreClass="Stdc.ecore#//initializer">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//initializer/exp"/>
+    <genClasses ecoreClass="Stdc.ecore#//Initializer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//Initializer/exp"/>
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//InitializerList">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//InitializerList/Desig"/>
@@ -196,9 +201,20 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//MultExp/left"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//MultExp/right"/>
     </genClasses>
-    <genClasses ecoreClass="Stdc.ecore#//PostfixExpression2">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//PostfixExpression2/exppost"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//PostfixExpression2/argumentExpList"/>
+    <genClasses ecoreClass="Stdc.ecore#//ArrayCall">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//ArrayCall/exppost"/>
+    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//FunctionCall">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//FunctionCall/argumentExpList"/>
+    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//DotID">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//DotID/name"/>
+    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//PointerCall">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//PointerCall/name"/>
+    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//IncDec">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//IncDec/op"/>
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//CharConst">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//CharConst/ch"/>
@@ -227,9 +243,9 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//DeclarationInitDeclaratorList/declarationSpec"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//DeclarationInitDeclaratorList/declaratorList"/>
     </genClasses>
-    <genClasses ecoreClass="Stdc.ecore#//IniDeclarator">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//IniDeclarator/left"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//IniDeclarator/right"/>
+    <genClasses ecoreClass="Stdc.ecore#//InitDeclaList">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//InitDeclaList/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//InitDeclaList/right"/>
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//StructList">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//StructList/structList"/>
@@ -263,11 +279,34 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//Alignment/type"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//Alignment/exp"/>
     </genClasses>
-    <genClasses ecoreClass="Stdc.ecore#//DirectDecl2">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//DirectDecl2/typeQualList"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//DirectDecl2/exp"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//DirectDecl2/idList"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//DirectDecl2/paramList"/>
+    <genClasses ecoreClass="Stdc.ecore#//D2"/>
+    <genClasses ecoreClass="Stdc.ecore#//D3">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//D3/typeQualList"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//D3/exp"/>
+    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//D4">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//D4/exp"/>
+    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//D5">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//D5/typeQualList"/>
+    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//D6">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//D6/typeQualList"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//D6/exp"/>
+    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//D7">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//D7/typeQualList"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//D7/exp"/>
+    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//D8">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//D8/typeQualList"/>
+    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//D9">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//D9/exp"/>
+    </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//FunctionParametersDecl">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//FunctionParametersDecl/idList"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//FunctionParametersDecl/paramList"/>
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//PointerRule">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//PointerRule/typeQualList"/>

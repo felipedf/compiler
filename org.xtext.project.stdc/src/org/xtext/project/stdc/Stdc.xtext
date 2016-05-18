@@ -144,12 +144,12 @@ PostfixExpression returns ExpressionC
 	;
 
 PostfixExpression2 returns PostfixExpression
-	: {PostfixExpression2}
-	( '[' exppost=ExpressionC ']'
-	| '(' argumentExpList+=ArgumentExpressionList? ')'
-	| '.' ID
-	| OpPtr ID
-	| OpInc
+	: 
+	( {ArrayCall} '[' exppost=ExpressionC ']'
+	| {FunctionCall} '(' argumentExpList=ArgumentExpressionList? ')'
+	| {DotID} '.' name=ID
+	| {PointerCall} OpPtr name=ID
+	| {IncDec} op=OpInc
 	)			
 	;
 
@@ -163,7 +163,7 @@ PostfixType:
 
 PrimaryExpression returns ExpressionC
 	: {CharConst} ch=CHAR
-	| {StrConst} str=STRING
+	| {StrConst} str=STRINGC
 	| Constant
 	| {Identifier} name=ID
 	| '(' ExpressionC ')'
@@ -214,11 +214,11 @@ DeclarationSpecifier
 	;
 
 InitDeclaratorList
-	: InitDeclarator (=>({IniDeclarator.left=current}',') right=InitDeclarator)*
+	: iniDec=InitDeclarator (=>({InitDeclaList.left=current}',') right=InitDeclarator)*
 	;
 
 InitDeclarator
-	: Declarator ('=' init=Initializer)?
+	: dec=Declarator ('=' init=Initializer)?
 	;
 
 StorageClassSpecifier
@@ -328,7 +328,7 @@ Alignas:
 ;
 
 Declarator
-	: Pointer? directDecl=DirectDeclarator
+	: point=Pointer? directDecl=DirectDeclarator
 	;
 
 DirectDeclarator
@@ -337,16 +337,16 @@ DirectDeclarator
 	;
 
 DirectDeclarator2 returns DirectDeclarator
-	: {DirectDecl2}
-	('[' '*'? ']'
-	| '[' 'static' typeQualList=TypeQualifierList exp=AssignmentExpression ']'
-	| '[' 'static' exp=AssignmentExpression ']'
-	| '[' typeQualList=TypeQualifierList '*' ']'
-	| '[' typeQualList=TypeQualifierList 'static' exp=AssignmentExpression ']'
-	| '[' typeQualList=TypeQualifierList exp=AssignmentExpression ']'
-	| '[' typeQualList=TypeQualifierList ']'
-	| '[' exp=AssignmentExpression ']'
-	| '(' (idList=IdentifierList|paramList=ParameterTypeList)? ')'
+	:
+	({D2} '[' '*'? ']'
+	|{D3} '[' 'static' typeQualList=TypeQualifierList exp=AssignmentExpression ']'
+	|{D4} '[' 'static' exp=AssignmentExpression ']'
+	|{D5} '[' typeQualList=TypeQualifierList '*' ']'
+	|{D6} '[' typeQualList=TypeQualifierList 'static' exp=AssignmentExpression ']'
+	|{D7} '[' typeQualList=TypeQualifierList exp=AssignmentExpression ']'
+	|{D8} '[' typeQualList=TypeQualifierList ']'
+	|{D9}'[' exp=AssignmentExpression ']'
+	|{FunctionParametersDecl} '(' (idList=IdentifierList|paramList=ParameterTypeList)? ')'
 	)
 	;
 
@@ -402,7 +402,7 @@ DirectAbstractDeclarator2
 	
 	;
 
-Initializer returns initializer
+Initializer
 	: {init_list} '{' init=InitializerList ','? '}'
 	 | exp=AssignmentExpression
 	;
@@ -429,7 +429,7 @@ Designator
 	;
 
 StaticAssertDeclaration
-	: '_Static_assert' '(' constExp=ConstantExpression ',' literal=STRING ')' ';'
+	: '_Static_assert' '(' constExp=ConstantExpression ',' literal=STRINGC ')' ';'
 	;
 
 Statement returns Statement
@@ -575,7 +575,9 @@ terminal F_CONSTANT
 	;
 	
 terminal CHAR: 
-			'"' (!('\\'|'"') ) '"' |
-			"'" (!('\\'|"'") ) "'"
-			;	
-	
+	"'" (!('\\'|"'") ) "'"
+;
+
+terminal STRINGC	:
+	'"' ( '\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\'|'"') )* '"'
+;

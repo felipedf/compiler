@@ -8,6 +8,7 @@ import org.xtext.project.stdc.stdc.AssignmentExpression
 import org.xtext.project.stdc.stdc.DeclarationInitDeclaratorList
 import org.xtext.project.stdc.stdc.DirectDeclarator
 import org.xtext.project.stdc.stdc.ExpressionC
+import org.xtext.project.stdc.stdc.FunctionCall
 import org.xtext.project.stdc.stdc.FunctionDefinition
 import org.xtext.project.stdc.stdc.Identifier
 import org.xtext.project.stdc.stdc.PostfixExpression
@@ -39,22 +40,32 @@ class StdcValidator extends AbstractStdcValidator {
 	}
 	
 	@Check
+	def checkFunctionParameters(FunctionCall fc) {
+		var parameters = fc.getAllContentsOfType(typeof(ExpressionC))
+		//println("AJAAA "+ parameters)
+	}
+	
+	@Check
 	def checkTypeFunctionAndReturn(FunctionDefinition f) {
 		var typeF = f.declarationSpec.filter(typeof(TypeSpecifier)).map[type].head;
-		var returnExp = f.returnStatement.head.expR.postExp
+		var hasPointer = f.decla.point
+		if(hasPointer !=null) typeF = typeF+'*';
+		var returnExp = f.returnStatement?.head.expR?.postExp
 		if(returnExp != null) { 
 			if( returnExp instanceof PostfixExpression) {
 				returnExp = (returnExp as PostfixExpression).primaryExp
 			}
 		}
-		var typeR = returnExp.typeActual
+		var typeR = returnExp?.typeActual
 		var ok = true
-		if(typeF == 'void' && (typeR != null || typeR != 'void')) ok = false
-		//else if(typeF == 'char*' && typeR != 'char*') ok = false
-		else if(typeF != 'char' && typeR == 'char*') ok = false
+		if(typeF == 'void' && typeR != null) ok = false
+		else if(typeF != 'void' && typeR == null) ok = false
+		else if(typeF == 'char*' && typeR != 'char*') ok = false
+		else if(typeF == 'char' && typeR != 'char') ok = false
+		else if(typeF != 'char*' && typeR == 'char*') ok = false
 		if(!ok) {
-			error("The return type is incompatible Expected'"+typeF+
-				"' but was "+typeR,StdcPackage.Literals.FUNCTION_DEFINITION__DECLARATION_SPEC,
+			error("The return type is incompatible. Expected '"+typeF+
+				"' but was '"+typeR+"'",StdcPackage.Literals.FUNCTION_DEFINITION__DECLARATION_SPEC,
 				INVALID_NAME)
 		}
 	}
@@ -105,10 +116,27 @@ class StdcValidator extends AbstractStdcValidator {
 	
 	@Check
 	def checkTypes(ExpressionC exp) {
-		val isSameType = exp.expectedType
-		if(isSameType==false) {
-				error("Types are incompatible",StdcPackage.Literals.EXPRESSION_C__POST_EXP,
-				INVALID_NAME)
+		var expected = exp.expectedType
+		var actual = exp.findType
+		println("porra mano "+ expected + " " + actual)
+		if(expected == null || actual == null) return;
+		if((expected == 'char*' && actual != 'char*') ||
+		 (expected != 'char*' && actual == 'char*') ||
+		 (expected == 'char' && actual != 'char'))  {
+			error("Types are incompatible. Expected '"+expected+
+					"' but was '"+actual+"'",
+					StdcPackage.Literals.EXPRESSION_C__POST_EXP,
+					INVALID_NAME)
+		}
+	}
+
+	@Check
+	def checkDeclarationsConstraints(DeclarationInitDeclaratorList d) {
+		val type = d.declarationSpec.filter(typeof(TypeSpecifier)).map[type].head;
+		if(type == 'void') {
+			error("Is not possible to declare a variable or field as void",
+					StdcPackage.Literals.EXPRESSION_C__POST_EXP,
+					INVALID_NAME)			
 		}
 	}
 
@@ -117,38 +145,19 @@ class StdcValidator extends AbstractStdcValidator {
 		val c = e.eContainer
 		val f = e.eContainingFeature
 		if(c instanceof AssignmentExpression) {
-			if(f == StdcPackage::eINSTANCE.getAssignmentExpression_Right) {
-				val leftExp=e.expectedType
-				println("EXPPPPPPPPP "+leftExp)
+			if(f == StdcPackage.Literals.ASSIGNMENT_EXPRESSION__RIGHT) {
+				val leftExp=c.left.findPrimaryExp
 				//Verifica se a assignment expression eh atribuida a um ID
 				if(!(leftExp instanceof Identifier)) {
-					error('Invalid Assignment',StdcPackage.Literals.EXPRESSION_C__POST_EXP,
+					error('The assigned variable is not an Identifier',StdcPackage.Literals.EXPRESSION_C__UN_EXP,
 				INVALID_NAME)
 				}
+				//veridica so o ID ja foi declarado
 				else if(leftExp instanceof Identifier) {
-					val previousDecl = e.containingMethod.body.
-						getAllContentsOfType(typeof(DirectDeclarator)).findFirst[
-							it.name == leftExp.name]
+					val previousDecl = leftExp.idType
 					if(previousDecl == null) {
-						error('Variable was not previously declared',StdcPackage.Literals.EXPRESSION_C__POST_EXP,
+						error("Variable '"+leftExp.name+"' was not previously declared",StdcPackage.Literals.EXPRESSION_C__UN_EXP,
 							INVALID_NAME)
-					}
-					else if(previousDecl != null) {
-						val typeDecl = previousDecl.containingDeclaration.declarationSpec.filter(
-							typeof(TypeSpecifier)
-						).map[type].head
-						var right = c.right.postExp
-						if(right != null) { 
-							if( right instanceof PostfixExpression) {
-								right = (right as PostfixExpression).primaryExp
-							}
-						}
-						if(typeDecl!=right.typeActual) {
-							error("Types are incompatible Expected '"+typeDecl+
-								"' but was '"+right.typeActual+"'",
-								StdcPackage.Literals.EXPRESSION_C__POST_EXP,
-								INVALID_NAME)							
-						}				
 					} 
 				}
 			}
