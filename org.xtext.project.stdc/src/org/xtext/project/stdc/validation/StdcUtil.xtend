@@ -33,6 +33,7 @@ import org.xtext.project.stdc.stdc.TypeSpecifier
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import org.xtext.project.stdc.stdc.InitDeclarator
 import org.xtext.project.stdc.stdc.FunctionCall
+import org.xtext.project.stdc.stdc.DoWhileLoop
 
 class StdcUtil {
 	val static ep = StdcPackage::eINSTANCE;
@@ -184,7 +185,9 @@ class StdcUtil {
 				if(type == 'char*') return 'error';
 				return type
 			}
-//			
+			DoWhileLoop case f == ep.getDoWhileLoop_Cond : {
+				
+			}
 //			CReturn case f == ep.CReturn_ExpR : {
 //				c.containingMethod.declarationSpec.filter(typeof(TypeSpecifier)).head.type
 //			}

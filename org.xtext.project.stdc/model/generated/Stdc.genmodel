@@ -32,6 +32,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//CastRule/type"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//CastRule/init"/>
     </genClasses>
+    <genClasses ecoreClass="Stdc.ecore#//PostfixExpression2"/>
     <genClasses ecoreClass="Stdc.ecore#//PostfixType"/>
     <genClasses ecoreClass="Stdc.ecore#//Constant"/>
     <genClasses ecoreClass="Stdc.ecore#//EnumerationConstant">
@@ -180,10 +181,12 @@
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//EqualExp">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//EqualExp/left"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//EqualExp/operator"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//EqualExp/right"/>
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//RelExp">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//RelExp/left"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//RelExp/operator"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//RelExp/right"/>
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//ShiftExp">
@@ -192,10 +195,12 @@
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//AddExp">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//AddExp/left"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//AddExp/operator"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//AddExp/right"/>
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//MultExp">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//MultExp/left"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Stdc.ecore#//MultExp/operator"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Stdc.ecore#//MultExp/right"/>
     </genClasses>
     <genClasses ecoreClass="Stdc.ecore#//PostfixExpression">

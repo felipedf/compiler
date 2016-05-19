@@ -1038,7 +1038,11 @@ ruleEqualityExpression returns [EObject current=null]
 				((
 					(
 					)
-					ruleOpEqual
+					(
+						(
+							ruleOpEqual
+						)
+					)
 				)
 				)=>
 				(
@@ -1049,13 +1053,25 @@ ruleEqualityExpression returns [EObject current=null]
 								$current);
 						}
 					)
-					{
-						newCompositeNode(grammarAccess.getEqualityExpressionAccess().getOpEqualParserRuleCall_1_0_0_1());
-					}
-					ruleOpEqual
-					{
-						afterParserOrEnumRuleCall();
-					}
+					(
+						(
+							{
+								newCompositeNode(grammarAccess.getEqualityExpressionAccess().getOperatorOpEqualParserRuleCall_1_0_0_1_0());
+							}
+							lv_operator_2_0=ruleOpEqual
+							{
+								if ($current==null) {
+									$current = createModelElementForParent(grammarAccess.getEqualityExpressionRule());
+								}
+								set(
+									$current,
+									"operator",
+									lv_operator_2_0,
+									"org.xtext.project.stdc.Stdc.OpEqual");
+								afterParserOrEnumRuleCall();
+							}
+						)
+					)
 				)
 			)
 			(
@@ -1140,7 +1156,11 @@ ruleRelationalExpression returns [EObject current=null]
 				((
 					(
 					)
-					ruleOpRel
+					(
+						(
+							ruleOpRel
+						)
+					)
 				)
 				)=>
 				(
@@ -1151,13 +1171,25 @@ ruleRelationalExpression returns [EObject current=null]
 								$current);
 						}
 					)
-					{
-						newCompositeNode(grammarAccess.getRelationalExpressionAccess().getOpRelParserRuleCall_1_0_0_1());
-					}
-					ruleOpRel
-					{
-						afterParserOrEnumRuleCall();
-					}
+					(
+						(
+							{
+								newCompositeNode(grammarAccess.getRelationalExpressionAccess().getOperatorOpRelParserRuleCall_1_0_0_1_0());
+							}
+							lv_operator_2_0=ruleOpRel
+							{
+								if ($current==null) {
+									$current = createModelElementForParent(grammarAccess.getRelationalExpressionRule());
+								}
+								set(
+									$current,
+									"operator",
+									lv_operator_2_0,
+									"org.xtext.project.stdc.Stdc.OpRel");
+								afterParserOrEnumRuleCall();
+							}
+						)
+					)
 				)
 			)
 			(
@@ -1356,7 +1388,11 @@ ruleAdditiveExpression returns [EObject current=null]
 				((
 					(
 					)
-					ruleOpAdd
+					(
+						(
+							ruleOpAdd
+						)
+					)
 				)
 				)=>
 				(
@@ -1367,13 +1403,25 @@ ruleAdditiveExpression returns [EObject current=null]
 								$current);
 						}
 					)
-					{
-						newCompositeNode(grammarAccess.getAdditiveExpressionAccess().getOpAddParserRuleCall_1_0_0_1());
-					}
-					ruleOpAdd
-					{
-						afterParserOrEnumRuleCall();
-					}
+					(
+						(
+							{
+								newCompositeNode(grammarAccess.getAdditiveExpressionAccess().getOperatorOpAddParserRuleCall_1_0_0_1_0());
+							}
+							lv_operator_2_0=ruleOpAdd
+							{
+								if ($current==null) {
+									$current = createModelElementForParent(grammarAccess.getAdditiveExpressionRule());
+								}
+								set(
+									$current,
+									"operator",
+									lv_operator_2_0,
+									"org.xtext.project.stdc.Stdc.OpAdd");
+								afterParserOrEnumRuleCall();
+							}
+						)
+					)
 				)
 			)
 			(
@@ -1458,7 +1506,11 @@ ruleMultiplicativeExpression returns [EObject current=null]
 				((
 					(
 					)
-					ruleOpMult
+					(
+						(
+							ruleOpMult
+						)
+					)
 				)
 				)=>
 				(
@@ -1469,13 +1521,25 @@ ruleMultiplicativeExpression returns [EObject current=null]
 								$current);
 						}
 					)
-					{
-						newCompositeNode(grammarAccess.getMultiplicativeExpressionAccess().getOpMultParserRuleCall_1_0_0_1());
-					}
-					ruleOpMult
-					{
-						afterParserOrEnumRuleCall();
-					}
+					(
+						(
+							{
+								newCompositeNode(grammarAccess.getMultiplicativeExpressionAccess().getOperatorOpMultParserRuleCall_1_0_0_1_0());
+							}
+							lv_operator_2_0=ruleOpMult
+							{
+								if ($current==null) {
+									$current = createModelElementForParent(grammarAccess.getMultiplicativeExpressionRule());
+								}
+								set(
+									$current,
+									"operator",
+									lv_operator_2_0,
+									"org.xtext.project.stdc.Stdc.OpMult");
+								afterParserOrEnumRuleCall();
+							}
+						)
+					)
 				)
 			)
 			(

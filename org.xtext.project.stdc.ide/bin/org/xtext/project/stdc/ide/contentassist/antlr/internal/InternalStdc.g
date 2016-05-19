@@ -5721,9 +5721,9 @@ rule__EqualityExpression__Group_1_0_0__1__Impl
 	}
 :
 (
-	{ before(grammarAccess.getEqualityExpressionAccess().getOpEqualParserRuleCall_1_0_0_1()); }
-	ruleOpEqual
-	{ after(grammarAccess.getEqualityExpressionAccess().getOpEqualParserRuleCall_1_0_0_1()); }
+	{ before(grammarAccess.getEqualityExpressionAccess().getOperatorAssignment_1_0_0_1()); }
+	(rule__EqualityExpression__OperatorAssignment_1_0_0_1)
+	{ after(grammarAccess.getEqualityExpressionAccess().getOperatorAssignment_1_0_0_1()); }
 )
 ;
 finally {
@@ -5910,9 +5910,9 @@ rule__RelationalExpression__Group_1_0_0__1__Impl
 	}
 :
 (
-	{ before(grammarAccess.getRelationalExpressionAccess().getOpRelParserRuleCall_1_0_0_1()); }
-	ruleOpRel
-	{ after(grammarAccess.getRelationalExpressionAccess().getOpRelParserRuleCall_1_0_0_1()); }
+	{ before(grammarAccess.getRelationalExpressionAccess().getOperatorAssignment_1_0_0_1()); }
+	(rule__RelationalExpression__OperatorAssignment_1_0_0_1)
+	{ after(grammarAccess.getRelationalExpressionAccess().getOperatorAssignment_1_0_0_1()); }
 )
 ;
 finally {
@@ -6288,9 +6288,9 @@ rule__AdditiveExpression__Group_1_0_0__1__Impl
 	}
 :
 (
-	{ before(grammarAccess.getAdditiveExpressionAccess().getOpAddParserRuleCall_1_0_0_1()); }
-	ruleOpAdd
-	{ after(grammarAccess.getAdditiveExpressionAccess().getOpAddParserRuleCall_1_0_0_1()); }
+	{ before(grammarAccess.getAdditiveExpressionAccess().getOperatorAssignment_1_0_0_1()); }
+	(rule__AdditiveExpression__OperatorAssignment_1_0_0_1)
+	{ after(grammarAccess.getAdditiveExpressionAccess().getOperatorAssignment_1_0_0_1()); }
 )
 ;
 finally {
@@ -6477,9 +6477,9 @@ rule__MultiplicativeExpression__Group_1_0_0__1__Impl
 	}
 :
 (
-	{ before(grammarAccess.getMultiplicativeExpressionAccess().getOpMultParserRuleCall_1_0_0_1()); }
-	ruleOpMult
-	{ after(grammarAccess.getMultiplicativeExpressionAccess().getOpMultParserRuleCall_1_0_0_1()); }
+	{ before(grammarAccess.getMultiplicativeExpressionAccess().getOperatorAssignment_1_0_0_1()); }
+	(rule__MultiplicativeExpression__OperatorAssignment_1_0_0_1)
+	{ after(grammarAccess.getMultiplicativeExpressionAccess().getOperatorAssignment_1_0_0_1()); }
 )
 ;
 finally {
@@ -16480,6 +16480,21 @@ finally {
 	restoreStackSize(stackSize);
 }
 
+rule__EqualityExpression__OperatorAssignment_1_0_0_1
+	@init {
+		int stackSize = keepStackSize();
+	}
+:
+	(
+		{ before(grammarAccess.getEqualityExpressionAccess().getOperatorOpEqualParserRuleCall_1_0_0_1_0()); }
+		ruleOpEqual
+		{ after(grammarAccess.getEqualityExpressionAccess().getOperatorOpEqualParserRuleCall_1_0_0_1_0()); }
+	)
+;
+finally {
+	restoreStackSize(stackSize);
+}
+
 rule__EqualityExpression__RightAssignment_1_1
 	@init {
 		int stackSize = keepStackSize();
@@ -16489,6 +16504,21 @@ rule__EqualityExpression__RightAssignment_1_1
 		{ before(grammarAccess.getEqualityExpressionAccess().getRightRelationalExpressionParserRuleCall_1_1_0()); }
 		ruleRelationalExpression
 		{ after(grammarAccess.getEqualityExpressionAccess().getRightRelationalExpressionParserRuleCall_1_1_0()); }
+	)
+;
+finally {
+	restoreStackSize(stackSize);
+}
+
+rule__RelationalExpression__OperatorAssignment_1_0_0_1
+	@init {
+		int stackSize = keepStackSize();
+	}
+:
+	(
+		{ before(grammarAccess.getRelationalExpressionAccess().getOperatorOpRelParserRuleCall_1_0_0_1_0()); }
+		ruleOpRel
+		{ after(grammarAccess.getRelationalExpressionAccess().getOperatorOpRelParserRuleCall_1_0_0_1_0()); }
 	)
 ;
 finally {
@@ -16525,6 +16555,21 @@ finally {
 	restoreStackSize(stackSize);
 }
 
+rule__AdditiveExpression__OperatorAssignment_1_0_0_1
+	@init {
+		int stackSize = keepStackSize();
+	}
+:
+	(
+		{ before(grammarAccess.getAdditiveExpressionAccess().getOperatorOpAddParserRuleCall_1_0_0_1_0()); }
+		ruleOpAdd
+		{ after(grammarAccess.getAdditiveExpressionAccess().getOperatorOpAddParserRuleCall_1_0_0_1_0()); }
+	)
+;
+finally {
+	restoreStackSize(stackSize);
+}
+
 rule__AdditiveExpression__RightAssignment_1_1
 	@init {
 		int stackSize = keepStackSize();
@@ -16534,6 +16579,21 @@ rule__AdditiveExpression__RightAssignment_1_1
 		{ before(grammarAccess.getAdditiveExpressionAccess().getRightMultiplicativeExpressionParserRuleCall_1_1_0()); }
 		ruleMultiplicativeExpression
 		{ after(grammarAccess.getAdditiveExpressionAccess().getRightMultiplicativeExpressionParserRuleCall_1_1_0()); }
+	)
+;
+finally {
+	restoreStackSize(stackSize);
+}
+
+rule__MultiplicativeExpression__OperatorAssignment_1_0_0_1
+	@init {
+		int stackSize = keepStackSize();
+	}
+:
+	(
+		{ before(grammarAccess.getMultiplicativeExpressionAccess().getOperatorOpMultParserRuleCall_1_0_0_1_0()); }
+		ruleOpMult
+		{ after(grammarAccess.getMultiplicativeExpressionAccess().getOperatorOpMultParserRuleCall_1_0_0_1_0()); }
 	)
 ;
 finally {

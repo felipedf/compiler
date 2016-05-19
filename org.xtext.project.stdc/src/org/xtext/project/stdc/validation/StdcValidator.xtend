@@ -18,6 +18,7 @@ import org.xtext.project.stdc.stdc.TypeSpecifier
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.xtext.project.stdc.validation.StdcUtil.*
 import org.xtext.project.stdc.stdc.FunctionParametersDecl
+import org.xtext.project.stdc.stdc.DoWhileLoop
 
 /**
  * This class contains custom validation rules. 
@@ -45,7 +46,9 @@ class StdcValidator extends AbstractStdcValidator {
 		var parameters = fc.params
 		val primaryExp = fc.containingPostfixExpression.primaryExp
 		if(primaryExp == null || !(primaryExp instanceof Identifier) ) {
-			//TODO error nao eh um id
+			error("The function name should be an Identifier.",
+					StdcPackage.Literals.FUNCTION_CALL__PARAMS,
+							INVALID_NAME)
 		}
 
 		val fname = (primaryExp as Identifier).name
@@ -54,7 +57,9 @@ class StdcValidator extends AbstractStdcValidator {
 				it.decla.directDecl.name == fname
 		]
 		if(fcall == null) {
-			//TODO error nao existe funcao
+			error("The function '"+fname+"' was not declared yet.",
+						StdcPackage.Literals.FUNCTION_CALL__PARAMS,
+							INVALID_NAME)
 		}
 		val params = fcall.decla.
 			getAllContentsOfType(typeof(FunctionParametersDecl)).head.params
@@ -187,7 +192,7 @@ class StdcValidator extends AbstractStdcValidator {
 					error('The assigned variable is not an Identifier',StdcPackage.Literals.EXPRESSION_C__UN_EXP,
 				INVALID_NAME)
 				}
-				//veridica so o ID ja foi declarado
+				//verifica so o ID ja foi declarado
 				else if(leftExp instanceof Identifier) {
 					val previousDecl = leftExp.idType
 					if(previousDecl == null) {
@@ -195,6 +200,17 @@ class StdcValidator extends AbstractStdcValidator {
 							INVALID_NAME)
 					} 
 				}
+			}
+		}
+	}
+	
+	@Check
+	def checkDoWhileCond(DoWhileLoop loop) {
+		var predicate = loop.cond?.findPrimaryExp
+		if(predicate instanceof Identifier) {
+			if(predicate.idType == null) {
+				error("Variable '"+predicate.name+"' was not previously declared",
+					StdcPackage.Literals.DO_WHILE_LOOP__COND, INVALID_NAME)				
 			}
 		}
 	}
