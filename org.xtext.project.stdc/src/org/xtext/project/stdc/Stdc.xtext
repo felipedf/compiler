@@ -75,7 +75,7 @@ AndExpression returns ExpressionC
 	;
 
 EqualityExpression returns ExpressionC
-	: RelationalExpression (=>({EqualExp.left=current} OpEqual) right=RelationalExpression)*
+	: RelationalExpression (=>({EqualExp.left=current} operator=OpEqual) right=RelationalExpression)*
 	;
 
 OpEqual:
@@ -83,7 +83,7 @@ OpEqual:
 ;
 
 RelationalExpression returns ExpressionC
-	: ShiftExpression (=>({RelExp.left=current} OpRel) right=ShiftExpression)*
+	: ShiftExpression (=>({RelExp.left=current} operator=OpRel) right=ShiftExpression)*
 	;
 
 OpRel:

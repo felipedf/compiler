@@ -12,6 +12,8 @@ public class CompilerSupport {
 	public static int memoryPosition = 100;
 	public static int registerCount = -1;
 	public static int loopCount = 0;
+	public static String funcAtual = "";
+	public static String variavelAtual = "";
 	public static HashMap<String, String> mapFuncReturn = new HashMap<String, String>();
 	
 	private static String getCodeFromContents(EObject obj) {
@@ -19,8 +21,7 @@ public class CompilerSupport {
 		for (EObject e : obj.eContents()) {
 			codigo += generalCompile(e);
 		}
-		return codigo; 
-				//+ "ME: " + classe + " " + "Pai: " + obj.eContainer().getClass().getSimpleName() + "\n";
+		return codigo;
 	}
 	
 	private static String tabCode(String code) {
@@ -50,7 +51,13 @@ public class CompilerSupport {
 	}
 
 	private static String compileInitializerImpl(EObject obj) {
-		return getCodeFromContents(obj);
+		String codigo = getCodeFromContents(obj);
+		EObject directDeclarator = obj.eContainer().eContents().get(0)
+				.eContents().get(0);
+		String id = parser(directDeclarator.toString(), "name");
+		String reg = "R" + registerCount;
+		codigo += "ST " + id + ", " + reg + "\n";
+		return codigo;
 	}
 	
 	private static String compileAddExpImpl(EObject obj) {
@@ -94,12 +101,27 @@ public class CompilerSupport {
 	
 	private static String compileRelExpImpl(EObject obj) {
 		String codigo = getCodeFromContents(obj);
+		String operator = parser(obj.toString(), "operator");
+		String type = "";
 		registerCount++;
 		codigo += "SUB " + "R" + registerCount + ", " + 
 				"R" + (registerCount - 1) + ", " + 
 				"R" + (registerCount - 2) + "\n";
+		if (operator.equals("<")) {
+			type = "BHTZ ";
+		} else if (operator.equals("<=")) {
+			type = "BHETZ ";
+		} else if (operator.equals(">")) {
+			type = "BLTZ ";
+		} else if (operator.equals(">=")) {
+			type = "BLETZ ";
+		} else if (operator.equals("==")) {
+			type = "BEZ ";
+		} else if (operator.equals("!=")) {
+			type = "BNEZ ";
+		}
 		if (obj.eContainer().getClass().getSimpleName().equals("DoWhileLoopImpl")) {
-			codigo += "BLTZ R" + registerCount + ", L" + loopCount + "\n";	
+			codigo += type +"R" + registerCount + ", L" + loopCount + "\n";	
 		}
 		return codigo;
 	}
@@ -113,11 +135,7 @@ public class CompilerSupport {
 	}
 	
 	private static String compileEqualExpImpl(EObject obj) {
-		String codigo = compileRelExpImpl(obj) ;
-		if (obj.eContainer().getClass().getSimpleName().equals("DoWhileLoopImpl")) {
-			codigo += "BEZ R" + registerCount + ", L" + loopCount + "\n";	
-		}
-		return codigo; // 3 == 3 gera o mesmo codigo de 3 < 3
+		return compileRelExpImpl(obj);
 	}
 	
 	private static String compileExpressionCImpl(EObject obj) {
@@ -151,10 +169,18 @@ public class CompilerSupport {
 		registerCount++;
 		String reg = "R" + registerCount;
 		String value = parser(obj.toString(), "name");
-		if (value == "false") {
-			value = "#0";
-		} else {
-			value = "#1";
+		// significa que é o retorno de uma função
+		if (obj.eContainer().eContainer().eContainer()
+				.getClass().getSimpleName().equals("CReturnImpl")) {
+			mapFuncReturn.put(funcAtual, reg);
+			return "LD " + reg + ", " + value + "\n";
+		}
+		//significa que é a chamada de uma função
+		if (obj.eContainer().eContents().size() > 1 &&
+				obj.eContainer().eContents().get(1)
+				.getClass().getSimpleName().equals("FunctionCallImpl")) {
+			funcAtual = value;
+			return "";
 		}
 		return "LD " + reg + ", " + value + "\n";	
 	}
@@ -162,16 +188,24 @@ public class CompilerSupport {
 	private static String compileDirectDeclaratorImpl(EObject obj) {
 		String codigo = getCodeFromContents(obj);
 		String id = parser(obj.toString(), "name");
+		variavelAtual = id;
 		if (!obj.eContents().isEmpty()) { // significa que é a declaração de uma função
+			funcAtual = id;
 			codigo += id + ": \n";
-		} else if (obj.eContainer().eContents().size() == 1) { // declaração sem atribuição
+		} else if (obj.eContainer().eContainer().eContents().size() == 1
+				|| obj.eContainer().eContainer()
+				.eContents().toString().contains("TypeSpecifierImpl")) { // declaração sem atribuição
 			codigo += "ST " + id + ", " + memoryPosition + "\n";
 			memoryPosition += 20;
-		} else { //declaração com atribuição
-			String reg = "R" + registerCount;
-			codigo += "ST " + id + ", " + reg + "\n";
-		}		
+		}	
 		return codigo;
+	}
+	
+	private static String compileFunctionCallImpl(EObject obj) {
+		String codigo = "";
+		codigo += "BEZ #0, " + funcAtual + "\n";
+		codigo += "ST " + variavelAtual + ", " + mapFuncReturn.get(funcAtual) + "\n";
+		return  codigo;
 	}
 	
 	private static String compileIntConstImpl(EObject obj) {
@@ -205,6 +239,8 @@ public class CompilerSupport {
 				return compileDeclarationInitDeclaratorListImpl(obj);
 			case "FunctionParametersDeclImpl":
 				return getCodeFromContents(obj);
+			case "FunctionCallImpl":
+				return compileFunctionCallImpl(obj);
 			case "FunctionDefinitionImpl":
 				return compileFunctionDefinitionImpl(obj);
 			case "TypeSpecifierImpl":
@@ -268,7 +304,9 @@ public class CompilerSupport {
 	private static String parser(String original, String toParser) {
 		String r = original.split(toParser + ": ")[1];
 		int end = r.indexOf(")");
-		return r.substring(0, end);
+		if (end != -1) 
+			return r.substring(0, end);
+		return null;
 	}
 	
 }
