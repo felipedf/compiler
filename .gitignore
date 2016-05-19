@@ -4,6 +4,7 @@ target
 *.xtendbin
 *.java._trace
 *.java_trace
+*.class
 
 .gradle
 build/
