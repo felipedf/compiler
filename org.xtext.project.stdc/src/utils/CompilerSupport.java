@@ -55,17 +55,38 @@ public class CompilerSupport {
 	
 	private static String compileAddExpImpl(EObject obj) {
 		String codigo = getCodeFromContents(obj);
+		String operator = parser(obj.toString(), "operator");
 		registerCount++;
-		codigo += "ADD " + "R" + registerCount + ", " + 
-				"R" + (registerCount - 1) + ", " + 
-				"R" + (registerCount - 2) + "\n";
+		String type = "";
+		if (operator.equals("+")) {
+			type += "ADD ";
+		} else if (operator.equals("-")) {
+			type += "SUB ";
+		}
+		if (obj.eContents().get(1).toString().contains("MultExpImpl")) {
+			codigo += type + " R" + registerCount + ", " + 
+					"R" + (registerCount - 1) + ", " + 
+					"R" + (registerCount - 4) + "\n";	
+		} else {
+			codigo += type + " R" + registerCount + ", " + 
+					"R" + (registerCount - 1) + ", " + 
+					"R" + (registerCount - 2) + "\n";
+		}
+		
 		return codigo;
 	}
 	
 	private static String compileMulExpImpl(EObject obj) {
 		String codigo = getCodeFromContents(obj);
+		String operator = parser(obj.toString(), "operator");
 		registerCount++;
-		codigo += "MUL " + "R" + registerCount + ", " + 
+		String type = "";
+		if (operator.equals("*")) {
+			type += "MUL ";
+		} else if (operator.equals("/")) {
+			type += "DIV ";
+		}
+		codigo += type + "R" + registerCount + ", " + 
 				"R" + (registerCount - 1) + ", " + 
 				"R" + (registerCount - 2) + "\n";
 		return codigo;
@@ -176,15 +197,21 @@ public class CompilerSupport {
 	
 	private static String generalCompile (EObject obj) {
 		switch (obj.getClass().getSimpleName()) {
+			case "InitDeclaratorImpl":
+				return getCodeFromContents(obj);
+			case "InitDeclaratorListImpl":
+				return getCodeFromContents(obj);
 			case "DeclarationInitDeclaratorListImpl":
 				return compileDeclarationInitDeclaratorListImpl(obj);
+			case "FunctionParametersDeclImpl":
+				return getCodeFromContents(obj);
 			case "FunctionDefinitionImpl":
 				return compileFunctionDefinitionImpl(obj);
 			case "TypeSpecifierImpl":
 				return "";
 			case "DeclaratorImpl":
 				return compileDeclaratorImpl(obj);
-			case "initializerImpl":
+			case "InitializerImpl":
 				return compileInitializerImpl(obj);
 			case "ExpressionCImpl":
 				return compileExpressionCImpl(obj);

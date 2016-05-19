@@ -99,7 +99,7 @@ OpShift:
 ;
 
 AdditiveExpression returns ExpressionC
-	: MultiplicativeExpression (=>({AddExp.left=current} OpAdd) right=MultiplicativeExpression)*
+	: MultiplicativeExpression (=>({AddExp.left=current} operator=OpAdd) right=MultiplicativeExpression)*
 	;
 	
 OpAdd:
@@ -107,7 +107,7 @@ OpAdd:
 ;
 
 MultiplicativeExpression returns ExpressionC
-	: UnaryExpression (=>({MultExp.left=current} OpMult) right=UnaryExpression)*
+	: UnaryExpression (=>({MultExp.left=current} operator=OpMult) right=UnaryExpression)*
 	;
 
 OpMult:
