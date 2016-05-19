@@ -17,6 +17,7 @@ import org.xtext.project.stdc.stdc.TypeSpecifier
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.xtext.project.stdc.validation.StdcUtil.*
+import org.xtext.project.stdc.stdc.FunctionParametersDecl
 
 /**
  * This class contains custom validation rules. 
@@ -41,8 +42,43 @@ class StdcValidator extends AbstractStdcValidator {
 	
 	@Check
 	def checkFunctionParameters(FunctionCall fc) {
-		var parameters = fc.getAllContentsOfType(typeof(ExpressionC))
-		//println("AJAAA "+ parameters)
+		var parameters = fc.params
+		val primaryExp = fc.containingPostfixExpression.primaryExp
+		if(primaryExp == null || !(primaryExp instanceof Identifier) ) {
+			//TODO error nao eh um id
+		}
+
+		val fname = (primaryExp as Identifier).name
+		val fcall = fc.containingClass.exDeclaration.
+			filter(typeof(FunctionDefinition)).findFirst[
+				it.decla.directDecl.name == fname
+		]
+		if(fcall == null) {
+			//TODO error nao existe funcao
+		}
+		val params = fcall.decla.
+			getAllContentsOfType(typeof(FunctionParametersDecl)).head.params
+
+
+		if(params.size != parameters.size) {
+			error("Number of parameters are diferent. Expected '"
+				+params.size+"' parameter(s) but only found '"+parameters.size+"'",
+								StdcPackage.Literals.FUNCTION_CALL__PARAMS,
+								INVALID_NAME)			
+		}
+
+		for(var p=0; p<params.length && p<parameters.length; p++) {
+			var typeDecl = params.get(p).declarationSpec.filter(typeof(TypeSpecifier)).map[type].head
+			var hasPointer = params.get(p).declarator?.point
+			if(hasPointer !=null) typeDecl = typeDecl+'*';
+			
+			var typeCall = parameters.get(p).findType
+			if(typeDecl != typeCall) {
+				error("Parameters types are incompatible.",
+					StdcPackage.Literals.FUNCTION_CALL__PARAMS,
+					INVALID_NAME)
+			}
+		}
 	}
 	
 	@Check
@@ -118,7 +154,6 @@ class StdcValidator extends AbstractStdcValidator {
 	def checkTypes(ExpressionC exp) {
 		var expected = exp.expectedType
 		var actual = exp.findType
-		println("porra mano "+ expected + " " + actual)
 		if(expected == null || actual == null) return;
 		if((expected == 'char*' && actual != 'char*') ||
 		 (expected != 'char*' && actual == 'char*') ||

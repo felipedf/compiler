@@ -16,6 +16,7 @@ import org.xtext.project.stdc.stdc.FunctionDefinition
 import org.xtext.project.stdc.stdc.Identifier
 import org.xtext.project.stdc.stdc.InclusiveOr
 import org.xtext.project.stdc.stdc.InitDeclaList
+import org.xtext.project.stdc.stdc.Initializer
 import org.xtext.project.stdc.stdc.IntConst
 import org.xtext.project.stdc.stdc.JumpStatement
 import org.xtext.project.stdc.stdc.LogicOr
@@ -30,6 +31,8 @@ import org.xtext.project.stdc.stdc.TranslationUnit
 import org.xtext.project.stdc.stdc.TypeSpecifier
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import org.xtext.project.stdc.stdc.InitDeclarator
+import org.xtext.project.stdc.stdc.FunctionCall
 
 class StdcUtil {
 	val static ep = StdcPackage::eINSTANCE;
@@ -47,11 +50,11 @@ class StdcUtil {
 			getAllContentsOfType(typeof(DirectDeclarator)).findFirst[
 			it.name == id.name]
 		if(previousDecl != null)  {
-			var type = previousDecl.containingDeclaration.declarationSpec.
+			var typeP = previousDecl.containingDeclaration.declarationSpec.
 								filter(typeof(TypeSpecifier)).map[type].head
 			val hasPointer = previousDecl.containingDeclarator.point
-			if(hasPointer !=null) type = type+'*';
-			return type
+			if(hasPointer !=null) typeP = typeP+'*';
+			return typeP
 		}
 		else {
 			var p1 = id.containingClass.exDeclaration.filter(
@@ -79,6 +82,17 @@ class StdcUtil {
 		}
 		return null
 	}
+
+	def static fType(Identifier id) {
+		val name = id.name;
+		val fname = id.containingClass.exDeclaration.
+			filter(typeof(FunctionDefinition)).findFirst[it.decla.directDecl.name == name]
+		var typeF = fname.declarationSpec.filter(typeof(TypeSpecifier)).head.type	
+			
+		var hasPointer = fname.decla.point
+		if(hasPointer !=null) typeF = typeF+'*';
+		return typeF
+	}
 	
 ///////////////////
 	def static containingClass(EObject e) {
@@ -96,6 +110,14 @@ class StdcUtil {
 	def static containingDeclarator(EObject e) {
 		e.getContainerOfType(typeof(Declarator))
 	}
+	
+	def static containingPostfixExpression(EObject e) {
+		e.getContainerOfType(typeof(PostfixExpression))
+	}
+	
+	def static containingInitDeclarator(EObject e) {
+		e.getContainerOfType(typeof(InitDeclarator))
+	}
 //////////////////////////
 
 	def static expectedType(ExpressionC e) {
@@ -104,6 +126,13 @@ class StdcUtil {
 		switch (c) {
 			AssignmentExpression case f == ep.getAssignmentExpression_Right : {
 				c.left.findType
+			}
+			Initializer case f == ep.getInitializer_Exp : {
+				var type = c.containingDeclaration.declarationSpec.
+					filter(typeof(TypeSpecifier)).map[type].head
+				var hasPointer = c.containingInitDeclarator.dec.point
+				if(hasPointer !=null) type = type+'*';
+				return type
 			}
 			LogicOr case f == ep.getLogicOr_Right : {
 				val type = c.left.findType
@@ -168,18 +197,28 @@ class StdcUtil {
 			IntConst: 'int'
 			FloatConst: 'float'
 			Identifier: e.idType
+			PostfixExpression: {
+				if(e.primaryExp instanceof Identifier) {
+					(e.primaryExp as Identifier).fType
+				}
+			}
 			default: 'int'
 		}
 	}
 	
-	def static findType(ExpressionC left) {
-		left.findPrimaryExp.typeActual
+	def static findType(ExpressionC exp) {
+		exp.findPrimaryExp.typeActual
 	}
 	
 	def static findPrimaryExp(ExpressionC exp) {
 		var exp2 = exp
 		if(exp2.postExp != null) {
 			if( exp2.postExp instanceof PostfixExpression) {
+				if((exp2.postExp as PostfixExpression).
+					getAllContentsOfType(FunctionCall).size !=0
+				) {
+					return exp2.postExp
+				}				
 				exp2 = (exp2.postExp as PostfixExpression).primaryExp
 			}
 		}

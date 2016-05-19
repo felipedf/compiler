@@ -143,10 +143,10 @@ PostfixExpression returns ExpressionC
 	) postfix2+=PostfixExpression2*
 	;
 
-PostfixExpression2 returns PostfixExpression
+PostfixExpression2
 	: 
 	( {ArrayCall} '[' exppost=ExpressionC ']'
-	| {FunctionCall} '(' argumentExpList=ArgumentExpressionList? ')'
+	| {FunctionCall} '(' (params+=AssignmentExpression (',' params+=AssignmentExpression)*)? ')'
 	| {DotID} '.' name=ID
 	| {PointerCall} OpPtr name=ID
 	| {IncDec} op=OpInc
@@ -170,10 +170,6 @@ PrimaryExpression returns ExpressionC
 	| GenericSelection
 ;	
 
-ArgumentExpressionList
-	: AssignmentExpression (=>({ArgumentExp.left=current} ',') right=AssignmentExpression)*
-	;
-
 Constant
 	: {IntConst} intC=I_CONSTANT		/* includes character_constant */
 	| {FloatConst} floatC=F_CONSTANT
@@ -195,7 +191,6 @@ GenericAssociation
 	: type=TypeName ':' assExp=AssignmentExpression
 	| 'default' ':' exp=AssignmentExpression
 	;
-
 
 pre_declaration:
 	declarationSpec+=DeclarationSpecifier+
@@ -337,8 +332,7 @@ DirectDeclarator
 	;
 
 DirectDeclarator2 returns DirectDeclarator
-	:
-	({D2} '[' '*'? ']'
+	:{D2} '[' '*'? ']'
 	|{D3} '[' 'static' typeQualList=TypeQualifierList exp=AssignmentExpression ']'
 	|{D4} '[' 'static' exp=AssignmentExpression ']'
 	|{D5} '[' typeQualList=TypeQualifierList '*' ']'
@@ -346,12 +340,12 @@ DirectDeclarator2 returns DirectDeclarator
 	|{D7} '[' typeQualList=TypeQualifierList exp=AssignmentExpression ']'
 	|{D8} '[' typeQualList=TypeQualifierList ']'
 	|{D9}'[' exp=AssignmentExpression ']'
-	|{FunctionParametersDecl} '(' (idList=IdentifierList|paramList=ParameterTypeList)? ')'
-	)
+	|{FunctionParametersDecl} '(' ( (idlist+=ID (',' idlist+=ID)*)
+			| (params+=ParameterDeclaration (',' params+=ParameterDeclaration)* (',' '...')? )?) ')'
 	;
 
 Pointer
-	: {PointerRule} '*' =>(typeQualList+=TypeQualifier | '*')* 
+	: {PointerRule} '*' (typeQualList+=TypeQualifier | '*')* 
 	;
 
 TypeQualifierList
@@ -367,7 +361,7 @@ ParameterList
 	;
 
 ParameterDeclaration
-	: {DeclarationAbstract} declarationSpec+=DeclarationSpecifier+ (abstract=AbstractDeclarator|=>declarator=Declarator)?
+	: declarationSpec+=DeclarationSpecifier+ declarator=Declarator?
 	;
 
 IdentifierList

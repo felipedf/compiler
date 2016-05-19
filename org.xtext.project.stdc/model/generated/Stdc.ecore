@@ -25,7 +25,7 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ConstantExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ExpressionC" eSuperTypes="#//ConstantExpression #//ArgumentExpressionList">
+  <eClassifiers xsi:type="ecore:EClass" name="ExpressionC" eSuperTypes="#//ConstantExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="postExp" eType="#//ExpressionC"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="c" eType="#//CastRule"
@@ -38,16 +38,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="init" eType="#//InitializerList"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="PostfixExpression" eSuperTypes="#//ExpressionC">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="primaryExp" eType="#//ExpressionC"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="postType" eType="#//PostfixType"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="postfix2" upperBound="-1"
-        eType="#//PostfixExpression" containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PostfixType"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ArgumentExpressionList"/>
   <eClassifiers xsi:type="ecore:EClass" name="Constant" eSuperTypes="#//ExpressionC"/>
   <eClassifiers xsi:type="ecore:EClass" name="EnumerationConstant">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="_ID" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -132,7 +123,12 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ParameterTypeList"/>
   <eClassifiers xsi:type="ecore:EClass" name="ParameterList" eSuperTypes="#//ParameterTypeList"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ParameterDeclaration" eSuperTypes="#//ParameterList"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ParameterDeclaration" eSuperTypes="#//ParameterList">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="declarationSpec" upperBound="-1"
+        eType="#//DeclarationSpecifier" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="declarator" eType="#//Declarator"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TypeName"/>
   <eClassifiers xsi:type="ecore:EClass" name="DirectAbstractDeclarator">
     <eStructuralFeatures xsi:type="ecore:EReference" name="abstractDeclarator" eType="#//DirectAbstractDeclarator"
@@ -270,21 +266,29 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//ExpressionC"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ArrayCall" eSuperTypes="#//PostfixExpression">
+  <eClassifiers xsi:type="ecore:EClass" name="PostfixExpression" eSuperTypes="#//ExpressionC">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="primaryExp" eType="#//ExpressionC"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="postType" eType="#//PostfixType"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="postfix2" upperBound="-1"
+        eType="#//ExpressionC" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ArrayCall" eSuperTypes="#//ExpressionC">
     <eStructuralFeatures xsi:type="ecore:EReference" name="exppost" eType="#//ExpressionC"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="FunctionCall" eSuperTypes="#//PostfixExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="argumentExpList" eType="#//ArgumentExpressionList"
-        containment="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FunctionCall" eSuperTypes="#//ExpressionC">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="params" upperBound="-1"
+        eType="#//ExpressionC" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="DotID" eSuperTypes="#//PostfixExpression">
+  <eClassifiers xsi:type="ecore:EClass" name="DotID" eSuperTypes="#//ExpressionC">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="PointerCall" eSuperTypes="#//PostfixExpression">
+  <eClassifiers xsi:type="ecore:EClass" name="PointerCall" eSuperTypes="#//ExpressionC">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="IncDec" eSuperTypes="#//PostfixExpression">
+  <eClassifiers xsi:type="ecore:EClass" name="IncDec" eSuperTypes="#//ExpressionC">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CharConst" eSuperTypes="#//ExpressionC">
@@ -295,12 +299,6 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Identifier" eSuperTypes="#//ExpressionC">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ArgumentExp" eSuperTypes="#//ArgumentExpressionList">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//ArgumentExpressionList"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//ExpressionC"
-        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="IntConst" eSuperTypes="#//Constant">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="intC" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -409,9 +407,10 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FunctionParametersDecl" eSuperTypes="#//DirectDeclarator">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="idList" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="paramList" eType="#//ParameterTypeList"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="idlist" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="params" upperBound="-1"
+        eType="#//ParameterDeclaration" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PointerRule" eSuperTypes="#//Pointer">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="typeQualList" unique="false"
@@ -421,14 +420,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//ParameterList"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//ParameterDeclaration"
-        containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="DeclarationAbstract" eSuperTypes="#//ParameterDeclaration">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="declarationSpec" upperBound="-1"
-        eType="#//DeclarationSpecifier" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="abstract" eType="#//DirectAbstractDeclarator"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="declarator" eType="#//Declarator"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TypeNameRule" eSuperTypes="#//TypeName">
