@@ -8,6 +8,7 @@ import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 import utils.CompilerSupport
+import java.util.HashMap
 
 /**
  * Generates code from your model files on save.
@@ -19,6 +20,10 @@ class StdcGenerator extends AbstractGenerator {
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		CompilerSupport.registerCount = 0;
 		CompilerSupport.loopCount = 0;
+		CompilerSupport.funcAtual = "";
+		CompilerSupport.variavelAtual = "";
+		CompilerSupport.memoryPosition = 100;
+		CompilerSupport.mapFuncReturn = new HashMap<String, String>();
 		fsa.generateFile('assembly.txt', CompilerSupport.compileFile(resource.contents))
 	}
 	       

@@ -16,6 +16,8 @@ public class CompilerSupport {
 	public static String variavelAtual = "";
 	public static HashMap<String, String> mapFuncReturn = new HashMap<String, String>();
 	
+	private static boolean called = false;
+	
 	private static String getCodeFromContents(EObject obj) {
 		String codigo = "";
 		for (EObject e : obj.eContents()) {
@@ -39,7 +41,11 @@ public class CompilerSupport {
 	}
 	
 	public static String compileFunctionDefinitionImpl(EObject obj) {
-		return getCodeFromContents(obj);
+		String codigo = getCodeFromContents(obj);
+		if (mapFuncReturn.get(funcAtual) == null) {
+			mapFuncReturn.put(funcAtual, "R" + registerCount);	
+		}
+		return codigo;
 	}
 	
 	public static String compileDeclarationInitDeclaratorListImpl(EObject obj) {
@@ -52,11 +58,12 @@ public class CompilerSupport {
 
 	private static String compileInitializerImpl(EObject obj) {
 		String codigo = getCodeFromContents(obj);
-		EObject directDeclarator = obj.eContainer().eContents().get(0)
-				.eContents().get(0);
-		String id = parser(directDeclarator.toString(), "name");
-		String reg = "R" + registerCount;
-		codigo += "ST " + id + ", " + reg + "\n";
+		if (!called) {
+			String reg = "R" + registerCount;
+			codigo += "ST " + variavelAtual + ", " + reg + "\n";	
+		} else {
+			called = false;
+		}		
 		return codigo;
 	}
 	
@@ -205,6 +212,7 @@ public class CompilerSupport {
 		String codigo = "";
 		codigo += "BEZ #0, " + funcAtual + "\n";
 		codigo += "ST " + variavelAtual + ", " + mapFuncReturn.get(funcAtual) + "\n";
+		called = true;
 		return  codigo;
 	}
 	
@@ -287,6 +295,8 @@ public class CompilerSupport {
 				return compileRelExpImpl(obj);
 			case "EqualExpImpl":
 				return compileEqualExpImpl(obj);
+			case "PointerRuleImpl":
+				return getCodeFromContents(obj);
 			case "LogicalExpImpl":
 				return compileRelExpImpl(obj); // mesmo do relacional
 			case "LogicOrImpl":
@@ -302,11 +312,13 @@ public class CompilerSupport {
 	}
 
 	private static String parser(String original, String toParser) {
-		String r = original.split(toParser + ": ")[1];
-		int end = r.indexOf(")");
-		if (end != -1) 
-			return r.substring(0, end);
-		return null;
+		if (original.contains(toParser + ": ")) {
+			String r = original.split(toParser + ": ")[1];
+			int end = r.indexOf(")");
+			if (end != -1) 
+				return r.substring(0, end);
+		}
+		return "parser erro " + original ;
 	}
 	
 }
