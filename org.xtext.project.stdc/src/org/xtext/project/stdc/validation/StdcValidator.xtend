@@ -261,7 +261,6 @@ class StdcValidator extends AbstractStdcValidator {
 								it != vardecl && it.name == vardecl.name]?.name == vardecl.name
 						}
 					]
-			println("CONFLICT " + duplicate )
 			if(duplicate != null) ok = false;
 		}
 		if (!ok)
