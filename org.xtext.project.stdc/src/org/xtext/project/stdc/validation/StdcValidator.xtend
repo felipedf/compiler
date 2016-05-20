@@ -19,6 +19,8 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.xtext.project.stdc.validation.StdcUtil.*
 import org.xtext.project.stdc.stdc.FunctionParametersDecl
 import org.xtext.project.stdc.stdc.DoWhileLoop
+import org.xtext.project.stdc.stdc.InitDeclaList
+import org.xtext.project.stdc.stdc.Initializer
 
 /**
  * This class contains custom validation rules. 
@@ -173,15 +175,16 @@ class StdcValidator extends AbstractStdcValidator {
 	@Check
 	def checkDeclarationsConstraints(DeclarationInitDeclaratorList d) {
 		val type = d.declarationSpec.filter(typeof(TypeSpecifier)).map[type].head;
-		if(type == 'void') {
+		if(type != null && type == 'void') {
 			error("Is not possible to declare a variable or field as void",
 					StdcPackage.Literals.EXPRESSION_C__POST_EXP,
-					INVALID_NAME)			
+					INVALID_NAME)
 		}
+		
 	}
 
 	@Check
-	def checkAssignmentsConstraints(ExpressionC e) {
+	def checkAssignmentsAndDeclarationConstraints(ExpressionC e) {
 		val c = e.eContainer
 		val f = e.eContainingFeature
 		if(c instanceof AssignmentExpression) {
@@ -200,6 +203,25 @@ class StdcValidator extends AbstractStdcValidator {
 							INVALID_NAME)
 					} 
 				}
+				
+				val id = e.findPrimaryExp
+				if(id instanceof Identifier) {
+					if(id.idType == null) {
+						error("Variable '"+id.name+"' was not previously declared",StdcPackage.Literals.EXPRESSION_C__UN_EXP,
+							INVALID_NAME)
+					}
+				}
+			}
+		}
+		else if(c instanceof Initializer) {
+			if(f == StdcPackage.Literals.INITIALIZER__EXP) {
+				val id = e.findPrimaryExp
+				if(id instanceof Identifier) {
+					if(id.idType == null) {
+						error("Variable '"+id.name+"' was not previously declared",StdcPackage.Literals.EXPRESSION_C__UN_EXP,
+							INVALID_NAME)
+					}
+				}			
 			}
 		}
 	}
@@ -217,11 +239,32 @@ class StdcValidator extends AbstractStdcValidator {
 
 	@Check
 	def void checkNoDuplicateVariable(DirectDeclarator vardecl) {
-		val duplicate = vardecl.containingMethod.body.
-			getAllContentsOfType(typeof(DirectDeclarator)).findFirst[
-				it != vardecl && it.name == vardecl.name		
-			]
-		if (duplicate != null)
+		val method = vardecl.containingMethod
+		var ok = true;
+		if(method != null) {
+			var duplicate = method.body.
+				getAllContentsOfType(typeof(DirectDeclarator)).findFirst[
+					it != vardecl && it.name == vardecl.name		
+				]
+			if(duplicate != null) ok = false;
+		}
+		if(ok) {
+			var duplicate = vardecl.containingClass.exDeclaration.filter(
+				typeof(DeclarationInitDeclaratorList)
+			).findFirst[
+						if(it.declaratorList.iniDec!=null){	
+							(it.declaratorList.iniDec.dec.directDecl.name == vardecl.name 
+								&& it.declaratorList.iniDec.dec.directDecl != vardecl)
+						}
+						else {
+							(it.declaratorList as InitDeclaList).getAllContentsOfType(typeof(DirectDeclarator)).findFirst[
+								it != vardecl && it.name == vardecl.name]?.name == vardecl.name
+						}
+					]
+			println("CONFLICT " + duplicate )
+			if(duplicate != null) ok = false;
+		}
+		if (!ok)
 			error("Conflicting declaration '" + vardecl.name + "'",
 				StdcPackage.Literals.DIRECT_DECLARATOR__NAME,
 				DUPLICATE_ELEMENT

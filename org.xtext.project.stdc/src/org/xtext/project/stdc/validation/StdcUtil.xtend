@@ -47,17 +47,23 @@ class StdcUtil {
 	}
 	
 	def static idType(Identifier id) {
-		val previousDecl = id.containingMethod.body.
+		val method = id.containingMethod
+		var ok = true;
+		if(method != null) {
+			val previousDecl = method.body.
 			getAllContentsOfType(typeof(DirectDeclarator)).findFirst[
 			it.name == id.name]
-		if(previousDecl != null)  {
-			var typeP = previousDecl.containingDeclaration.declarationSpec.
-								filter(typeof(TypeSpecifier)).map[type].head
-			val hasPointer = previousDecl.containingDeclarator.point
-			if(hasPointer !=null) typeP = typeP+'*';
-			return typeP
+			if(previousDecl == null) ok = false
+	
+			if(ok)  {
+				var typeP = previousDecl.containingDeclaration.declarationSpec.
+									filter(typeof(TypeSpecifier)).map[type].head
+				val hasPointer = previousDecl.containingDeclarator.point
+				if(hasPointer !=null) typeP = typeP+'*';
+				return typeP
+			}
 		}
-		else {
+		if(!ok) {
 			var p1 = id.containingClass.exDeclaration.filter(
 				typeof(DeclarationInitDeclaratorList)
 			)
@@ -217,11 +223,11 @@ class StdcUtil {
 		var exp2 = exp
 		if(exp2.postExp != null) {
 			if( exp2.postExp instanceof PostfixExpression) {
-				if((exp2.postExp as PostfixExpression).
-					getAllContentsOfType(FunctionCall).size !=0
-				) {
-					return exp2.postExp
-				}				
+//				if((exp2.postExp as PostfixExpression).
+//					getAllContentsOfType(FunctionCall).size !=0
+//				) {
+//					return exp2.postExp
+//				}
 				exp2 = (exp2.postExp as PostfixExpression).primaryExp
 			}
 		}
