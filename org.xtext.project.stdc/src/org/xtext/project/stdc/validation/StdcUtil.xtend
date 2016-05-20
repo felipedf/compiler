@@ -12,10 +12,12 @@ import org.xtext.project.stdc.stdc.EqualExp
 import org.xtext.project.stdc.stdc.ExclusiveOr
 import org.xtext.project.stdc.stdc.ExpressionC
 import org.xtext.project.stdc.stdc.FloatConst
+import org.xtext.project.stdc.stdc.FunctionCall
 import org.xtext.project.stdc.stdc.FunctionDefinition
 import org.xtext.project.stdc.stdc.Identifier
 import org.xtext.project.stdc.stdc.InclusiveOr
 import org.xtext.project.stdc.stdc.InitDeclaList
+import org.xtext.project.stdc.stdc.InitDeclarator
 import org.xtext.project.stdc.stdc.Initializer
 import org.xtext.project.stdc.stdc.IntConst
 import org.xtext.project.stdc.stdc.JumpStatement
@@ -31,9 +33,6 @@ import org.xtext.project.stdc.stdc.TranslationUnit
 import org.xtext.project.stdc.stdc.TypeSpecifier
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import org.xtext.project.stdc.stdc.InitDeclarator
-import org.xtext.project.stdc.stdc.FunctionCall
-import org.xtext.project.stdc.stdc.DoWhileLoop
 
 class StdcUtil {
 	val static ep = StdcPackage::eINSTANCE;
@@ -191,12 +190,6 @@ class StdcUtil {
 				if(type == 'char*') return 'error';
 				return type
 			}
-			DoWhileLoop case f == ep.getDoWhileLoop_Cond : {
-				
-			}
-//			CReturn case f == ep.CReturn_ExpR : {
-//				c.containingMethod.declarationSpec.filter(typeof(TypeSpecifier)).head.type
-//			}
 		}
 	}	
 	def static typeActual(ExpressionC e) {
@@ -223,11 +216,11 @@ class StdcUtil {
 		var exp2 = exp
 		if(exp2.postExp != null) {
 			if( exp2.postExp instanceof PostfixExpression) {
-//				if((exp2.postExp as PostfixExpression).
-//					getAllContentsOfType(FunctionCall).size !=0
-//				) {
-//					return exp2.postExp
-//				}
+				if((exp2.postExp as PostfixExpression).
+					getAllContentsOfType(FunctionCall).size !=0
+				) {
+					return exp2.postExp
+				}
 				exp2 = (exp2.postExp as PostfixExpression).primaryExp
 			}
 		}

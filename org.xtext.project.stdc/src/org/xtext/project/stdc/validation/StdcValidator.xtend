@@ -15,12 +15,15 @@ import org.xtext.project.stdc.stdc.PostfixExpression
 import org.xtext.project.stdc.stdc.StdcPackage
 import org.xtext.project.stdc.stdc.TypeSpecifier
 
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import static extension org.xtext.project.stdc.validation.StdcUtil.*
 import org.xtext.project.stdc.stdc.FunctionParametersDecl
 import org.xtext.project.stdc.stdc.DoWhileLoop
 import org.xtext.project.stdc.stdc.InitDeclaList
 import org.xtext.project.stdc.stdc.Initializer
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.xtext.project.stdc.validation.StdcUtil.*
+import org.xtext.project.stdc.stdc.CReturn
+import org.xtext.project.stdc.stdc.CompoundStatement
 
 /**
  * This class contains custom validation rules. 
@@ -40,6 +43,18 @@ class StdcValidator extends AbstractStdcValidator {
 		if(nReturns == 0 && ftype != 'void') {
 			error('Method should have a return',StdcPackage.Literals.FUNCTION_DEFINITION__BODY,
 				INVALID_NAME)
+		}
+	}
+	
+	@Check
+	def checkNoStatementAfterReturn(CReturn ret) {
+		val statements = ret.getContainerOfType(CompoundStatement).blockList
+		if (statements.last != ret.eContainer) {
+			error("Unreachable code.",
+				statements.get(statements.indexOf(ret.eContainer)+1),
+				null,
+				INVALID_NAME
+			)
 		}
 	}
 	
@@ -162,13 +177,23 @@ class StdcValidator extends AbstractStdcValidator {
 		var expected = exp.expectedType
 		var actual = exp.findType
 		if(expected == null || actual == null) return;
-		if((expected == 'char*' && actual != 'char*') ||
-		 (expected != 'char*' && actual == 'char*') ||
-		 (expected == 'char' && actual != 'char'))  {
-			error("Types are incompatible. Expected '"+expected+
-					"' but was '"+actual+"'",
-					StdcPackage.Literals.EXPRESSION_C__POST_EXP,
-					INVALID_NAME)
+		if((expected == 'char*' && actual != 'char*')
+		||  (expected == 'error' || actual == 'error') 
+		||  (expected != 'char*' && actual == 'char*')
+		||  (expected == 'char' && actual != 'char'))  {
+			if(expected == 'error') { expected = actual; actual = 'char*'}
+			if(actual == 'error') { actual = 'error'; expected = 'char*'}
+			if(expected == actual) {
+				error("Cannot execute operation between strings",
+						StdcPackage.Literals.EXPRESSION_C__POST_EXP,
+						INVALID_NAME)					
+			}
+			else {
+				error("Types are incompatible. Expected '"+expected+
+						"' but was '"+actual+"'",
+						StdcPackage.Literals.EXPRESSION_C__POST_EXP,
+						INVALID_NAME)				
+			}
 		}
 	}
 
@@ -239,16 +264,25 @@ class StdcValidator extends AbstractStdcValidator {
 
 	@Check
 	def void checkNoDuplicateVariable(DirectDeclarator vardecl) {
-		val method = vardecl.containingMethod
+		if(vardecl.getContainerOfType(typeof(FunctionParametersDecl)) != null) return;
 		var ok = true;
-		if(method != null) {
+		val loop = vardecl.getContainerOfType(typeof(DoWhileLoop))
+		val method = vardecl.containingMethod
+		if(loop != null) {
+			var duplicate = loop.body.
+				getAllContentsOfType(typeof(DirectDeclarator)).findFirst[
+					it != vardecl && it.name == vardecl.name		
+				]
+			if(duplicate != null) ok = false;		
+		}
+		else if(method != null) {
 			var duplicate = method.body.
 				getAllContentsOfType(typeof(DirectDeclarator)).findFirst[
 					it != vardecl && it.name == vardecl.name		
 				]
 			if(duplicate != null) ok = false;
 		}
-		if(ok) {
+		else {
 			var duplicate = vardecl.containingClass.exDeclaration.filter(
 				typeof(DeclarationInitDeclaratorList)
 			).findFirst[
